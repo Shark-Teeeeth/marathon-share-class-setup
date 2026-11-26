@@ -1,6 +1,5 @@
-import type { Metadata } from 'next';
+import { Metadata } from 'next';
 import { connection } from 'next/server';
-import { Suspense } from 'react';
 import setupData from '../../data/setup_data.json';
 import { supabase } from '../lib/supabase';
 import BuilderClient from './BuilderClient';
@@ -9,64 +8,81 @@ type Props = {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 };
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
-  const resolvedParams = (await searchParams) || {};
-  const id = typeof resolvedParams.id === 'string' ? resolvedParams.id : undefined;
-  const lang = (typeof resolvedParams.lang === 'string' ? resolvedParams.lang : 'ja') as 'ja' | 'en' | 'ko';
+const BASE_URL = 'https://marathon-share-class-setup.vercel.app';
 
-  let title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '423 Club | MARATHON // BUILD & SHARE CLASS SETUP';
-  let description = 'Custom Runner & Weapon Loadout Builder for Marathon';
+export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+  await connection();
+  const resolvedParams = await searchParams;
+  const id = typeof resolvedParams.id === 'string' ? resolvedParams.id : undefined;
+  const rawLang = typeof resolvedParams.lang === 'string' ? resolvedParams.lang : 'ja';
+  const lang: 'ja' | 'en' | 'ko' =
+    rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
+
+  let title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
+  let shellId = typeof resolvedParams.shell === 'string' ? resolvedParams.shell : 'all';
+  let weaponId = typeof resolvedParams.weapon === 'string' ? resolvedParams.weapon : 'w_1';
+  let description = 'MARATHON // BUILD & SHARE CLASS SETUP';
+
   const ogParams = new URLSearchParams();
+  ogParams.set('lang', lang);
 
   if (id) {
     ogParams.set('id', id);
-    ogParams.set('lang', lang);
     const { data } = await supabase.from('builds').select('*').eq('id', id).single();
     if (data) {
-      const weapon = setupData.weapons.find((w) => w.id === data.weapon_id);
-      const shell = setupData.shells.find((s) => s.id === data.shell_id);
-      title = `${data.title} | 423 Club`;
-      description = `Shell: ${shell?.name[lang] || ''} / Weapon: ${weapon?.name[lang] || ''} ${data.comment ? `- ${data.comment}` : ''}`;
+      title = data.title;
+      shellId = data.shell_id;
+      weaponId = data.weapon_id;
+      if (data.comment) description = data.comment;
     }
   } else {
-    Object.entries(resolvedParams).forEach(([k, v]) => {
-      if (Array.isArray(v)) v.forEach((item) => ogParams.append(k, item));
-      else if (v) ogParams.set(k, v);
-    });
+    if (title) ogParams.set('title', title);
+    ogParams.set('shell', shellId);
+    ogParams.set('weapon', weaponId);
+    const mRaw = resolvedParams.m;
+    if (Array.isArray(mRaw)) {
+      mRaw.forEach((v) => ogParams.append('m', v));
+    } else if (typeof mRaw === 'string') {
+      ogParams.append('m', mRaw);
+    }
   }
 
-  const ogImageUrl = `/api/og?${ogParams.toString()}`;
+  const shell = setupData.shells.find((s) => s.id === shellId) || setupData.shells[0];
+  const weapon = setupData.weapons.find((w) => w.id === weaponId) || setupData.weapons[0];
+
+  const pageTitle = title
+    ? `${title} | 423 Club`
+    : '423 Club // MARATHON // BUILD & SHARE CLASS SETUP';
+
+  const fullDesc = `Shell: ${shell.name[lang]} / Weapon: ${weapon.name[lang]} - ${description}`;
+  const ogImageUrl = `${BASE_URL}/api/og?${ogParams.toString()}`;
 
   return {
-    title,
-    description,
+    title: pageTitle,
+    description: fullDesc,
     openGraph: {
-      title,
-      description,
-      images: [{ url: ogImageUrl, width: 1200, height: 630 }],
+      title: pageTitle,
+      description: fullDesc,
       type: 'website',
+      url: id ? `${BASE_URL}/?id=${id}&lang=${lang}` : BASE_URL,
+      images: [
+        {
+          url: ogImageUrl,
+          width: 1200,
+          height: 630,
+          alt: pageTitle,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
-      title,
-      description,
+      title: pageTitle,
+      description: fullDesc,
       images: [ogImageUrl],
     },
   };
 }
 
-async function DynamicMarker() {
-  await connection();
-  return null;
-}
-
-export default function Page() {
-  return (
-    <>
-      <Suspense fallback={null}>
-        <DynamicMarker />
-      </Suspense>
-      <BuilderClient />
-    </>
-  );
+export default function HomePage() {
+  return <BuilderClient />;
 }
