@@ -38,6 +38,13 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 const UI_TEXT = {
   ja: {
     visitorLabel: '訪問者数',
+    noticeLines: [
+      '本アプリは初心者～中級者を想定しています。',
+      'パッチや改造パーツのレアリティはデラックスです。',
+      'エンハンスに置き換えて使用しても良いと思います。',
+      'メモ代わりに。普段使っていない武器を拾ってしまったときなど、何を組み合わせようか迷ったときに。',
+      'ぜひご活用ください。',
+    ],
     userNameLabel: '1. ユーザー名を入力',
     userNamePlaceholder: '例：Shijimi',
     titleLabel: '2. ビルド名を入力',
@@ -91,6 +98,12 @@ const UI_TEXT = {
   },
   en: {
     visitorLabel: 'VISITORS',
+    noticeLines: [
+      'This app is designed for beginner to intermediate players.',
+      'Patch and mod rarities listed here are Deluxe.',
+      'Feel free to substitute them with Enhanced equivalents as needed.',
+      'Use it as a quick memo—for example, when you pick up an unfamiliar weapon and are unsure what attachments to combine. Enjoy!',
+    ],
     userNameLabel: '1. Enter Username',
     userNamePlaceholder: 'e.g., Shijimi',
     titleLabel: '2. Enter Build Title',
@@ -144,6 +157,12 @@ const UI_TEXT = {
   },
   ko: {
     visitorLabel: '방문자 수',
+    noticeLines: [
+      '본 앱은 초보자~중급자를 대상으로 제작되었습니다.',
+      '패치 및 개조 부품의 희귀도는 디럭스(Deluxe) 기준입니다.',
+      '인핸스(Enhanced) 등급으로 대체하여 사용하셔도 좋습니다.',
+      '메모 대용으로, 평소 쓰지 않는 무기를 주웠을 때 어떤 부품을 조합할지 고민될 때 등 자유롭게 활용해 주세요.',
+    ],
     userNameLabel: '1. 사용자 이름 입력',
     userNamePlaceholder: '예: Shijimi',
     titleLabel: '2. 빌드 이름 입력',
@@ -727,6 +746,15 @@ export default function BuilderClient() {
       </header>
 
       <main style={styles.main}>
+        {/* 入力欄上の案内・注意書きボックス */}
+        <div style={styles.noticeBanner}>
+          {t.noticeLines.map((line, idx) => (
+            <p key={idx} style={styles.noticeLine}>
+              {line}
+            </p>
+          ))}
+        </div>
+
         <section style={styles.card}>
           {/* 1. ユーザー名 / 2. ビルド名 */}
           <div style={styles.gridUserTitle}>
@@ -1179,6 +1207,25 @@ const styles: Record<string, React.CSSProperties> = {
     maxWidth: '1040px',
     margin: '32px auto 0',
     padding: '0 20px',
+  },
+  noticeBanner: {
+    backgroundColor: '#161a20',
+    borderLeft: '4px solid #c8ff00',
+    borderTop: '1px solid #252c37',
+    borderRight: '1px solid #252c37',
+    borderBottom: '1px solid #252c37',
+    borderRadius: '8px',
+    padding: '14px 18px',
+    marginBottom: '20px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  noticeLine: {
+    margin: 0,
+    fontSize: '13px',
+    lineHeight: 1.6,
+    color: '#d0d8e4',
   },
   card: {
     backgroundColor: '#161a20',
