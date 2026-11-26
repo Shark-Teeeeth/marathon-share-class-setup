@@ -36,7 +36,7 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 
 const UI_TEXT = {
   ja: {
-    visitorLabel: 'VISITORS / 訪問者数',
+    visitorLabel: '訪問者数',
     userNameLabel: '1. ユーザー名を入力',
     userNamePlaceholder: '例：Shijimi',
     titleLabel: '2. ビルド名を入力',
@@ -44,8 +44,8 @@ const UI_TEXT = {
     shellLabel: '3. シェルを選択',
     weaponLabel: '4. 武器を選択',
     modsLabel: '5. 装着パーツ・チップを選択',
-    commentLabel: '6. 立ち回りメモ・コメント（任意）',
-    commentPlaceholder: '立ち回りやカスタムの狙いを入力',
+    commentLabel: '6. コメント（任意）',
+    commentPlaceholder: '例：立ち回りやカスタムの狙い',
     pinLabel: '7. 削除用4桁パスコード（任意）',
     pinPlaceholder: '例: 1234',
     saveBtn: 'ビルドを保存してURL発行',
@@ -95,8 +95,8 @@ const UI_TEXT = {
     shellLabel: '3. Select Runner Shell',
     weaponLabel: '4. Select Weapon',
     modsLabel: '5. Select Mods & Chip Upgrades',
-    commentLabel: '6. Playstyle Notes / Comments (Optional)',
-    commentPlaceholder: 'Enter playstyle tips or build notes',
+    commentLabel: '6. Comments (Optional)',
+    commentPlaceholder: 'e.g., Playstyle tips or build concept',
     pinLabel: '7. 4-Digit Delete PIN (Optional)',
     pinPlaceholder: 'e.g. 1234',
     saveBtn: 'Save Build & Generate Share URL',
@@ -138,7 +138,7 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
   },
   ko: {
-    visitorLabel: 'VISITORS / 방문자 수',
+    visitorLabel: '방문자 수',
     userNameLabel: '1. 사용자 이름 입력',
     userNamePlaceholder: '예: Shijimi',
     titleLabel: '2. 빌드 이름 입력',
@@ -146,8 +146,8 @@ const UI_TEXT = {
     shellLabel: '3. 쉘 선택',
     weaponLabel: '4. 무기 선택',
     modsLabel: '5. 장착 부품 및 칩 선택',
-    commentLabel: '6. 운용 팁 / 코멘트 (선택)',
-    commentPlaceholder: '운용 팁이나 빌드 의도를 입력하세요',
+    commentLabel: '6. 코멘트 (선택)',
+    commentPlaceholder: '예: 운용 팁이나 빌드 의도',
     pinLabel: '7. 삭제용 4자리 비밀번호 (선택)',
     pinPlaceholder: '예: 1234',
     saveBtn: '빌드 저장 및 공유 URL 발급',
@@ -218,7 +218,7 @@ function ShellAvatar({
 }) {
   const slug = resolveShellSlug(shellId);
   const [extIndex, setExtIndex] = useState(0);
-  const extensions = ['png', 'jpg', 'webp'];
+  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG'];
 
   useEffect(() => {
     setExtIndex(0);
@@ -763,7 +763,7 @@ export default function BuilderClient() {
             </div>
           </div>
 
-          {/* 6. 立ち回りメモ・コメント（任意） / 7. 削除用4桁パスコード（任意） */}
+          {/* 6. コメント（任意） / 7. 削除用4桁パスコード（任意） */}
           <div style={styles.gridCommentPin}>
             <div>
               <label style={styles.optionalLabel}>{t.commentLabel}</label>
