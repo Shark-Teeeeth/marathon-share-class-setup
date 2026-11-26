@@ -201,6 +201,19 @@ const SHELL_IMAGE_MAP: Record<string, string> = {
   shell_8: 'bishop',
 };
 
+function getItemDescription(item: unknown, lang: Lang): string {
+  if (!item || typeof item !== 'object') return '';
+  const record = item as Record<string, unknown>;
+  const rawDesc = record.desc ?? record.description ?? record.effect ?? record.detail;
+  if (!rawDesc) return '';
+  if (typeof rawDesc === 'string') return rawDesc;
+  if (typeof rawDesc === 'object') {
+    const langObj = rawDesc as Record<string, string>;
+    return langObj[lang] || langObj.ja || langObj.en || '';
+  }
+  return '';
+}
+
 function ShellAvatar({
   shellId,
   alt,
@@ -478,6 +491,8 @@ export default function BuilderClient() {
     const params = new URLSearchParams();
     params.set('lang', lang);
     if (title.trim()) params.set('title', title.trim());
+    if (userName.trim()) params.set('user', userName.trim());
+    if (comment.trim()) params.set('comment', comment.trim());
     params.set('shell', selectedShell);
     params.set('weapon', selectedWeapon);
     Object.entries(selectedMods).forEach(([slot, mId]) => {
@@ -729,12 +744,15 @@ export default function BuilderClient() {
               {currentWeapon?.slots.map((slotName, idx) => {
                 const options = getOptionsForSlot(slotName);
                 const slotDisplay = SLOT_LABELS[slotName]?.[lang] || slotName;
+                const selectedId = selectedMods[slotName] || '';
+                const selectedOption = options.find((opt) => opt.id === selectedId);
+                const selectedDesc = getItemDescription(selectedOption, lang);
 
                 return (
                   <div key={`${slotName}-${idx}`} style={styles.slotBox}>
                     <span style={styles.slotTitle}>{slotDisplay}</span>
                     <select
-                      value={selectedMods[slotName] || ''}
+                      value={selectedId}
                       onChange={(e) =>
                         setSelectedMods((prev) => ({
                           ...prev,
@@ -750,6 +768,9 @@ export default function BuilderClient() {
                         </option>
                       ))}
                     </select>
+                    {selectedDesc && (
+                      <p style={styles.slotDescText}>{selectedDesc}</p>
+                    )}
                   </div>
                 );
               })}
@@ -863,16 +884,21 @@ export default function BuilderClient() {
                     </div>
 
                     {b.comment && <p style={styles.buildComment}>{b.comment}</p>}
-                    <div style={styles.modTags}>
+                    <div style={styles.modDetailList}>
                       {Object.entries(b.mods || {}).map(([slot, mId]) => {
                         if (!mId) return null;
                         const modItem =
                           setupData.mods.find((m) => m.id === mId) ||
                           setupData.chips.find((c) => c.id === mId);
+                        const itemName = modItem ? modItem.name[lang] : mId;
+                        const itemDesc = getItemDescription(modItem, lang);
                         return (
-                          <span key={slot} style={styles.modTag}>
-                            {modItem ? modItem.name[lang] : mId}
-                          </span>
+                          <div key={slot} style={styles.modDetailBox}>
+                            <div style={styles.modDetailName}>{itemName}</div>
+                            {itemDesc && (
+                              <div style={styles.modDetailDesc}>{itemDesc}</div>
+                            )}
+                          </div>
                         );
                       })}
                     </div>
@@ -1164,13 +1190,21 @@ const styles: Record<string, React.CSSProperties> = {
     border: '1px solid #232933',
     padding: '12px',
     borderRadius: '6px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
   },
   slotTitle: {
     display: 'block',
     fontSize: '12px',
     color: '#8b9bb4',
-    marginBottom: '6px',
     fontWeight: 600,
+  },
+  slotDescText: {
+    margin: '2px 0 0 0',
+    fontSize: '11px',
+    lineHeight: 1.45,
+    color: '#a3b8cc',
   },
   actionRow: {
     display: 'flex',
@@ -1320,19 +1354,31 @@ const styles: Record<string, React.CSSProperties> = {
     fontSize: '13px',
     color: '#9aa8bc',
   },
-  modTags: {
+  modDetailList: {
     display: 'flex',
-    flexWrap: 'wrap',
+    flexDirection: 'column',
     gap: '6px',
     marginTop: '4px',
   },
-  modTag: {
-    fontSize: '11px',
+  modDetailBox: {
     backgroundColor: '#0d0f12',
-    border: '1px solid #2c3440',
-    padding: '3px 7px',
+    borderLeft: '3px solid #c8ff00',
+    borderTop: '1px solid #222933',
+    borderRight: '1px solid #222933',
+    borderBottom: '1px solid #222933',
+    padding: '6px 10px',
     borderRadius: '4px',
-    color: '#d0d8e4',
+  },
+  modDetailName: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: '#f0f4f8',
+  },
+  modDetailDesc: {
+    fontSize: '11px',
+    color: '#9aa8bc',
+    marginTop: '2px',
+    lineHeight: 1.4,
   },
   cardActions: {
     display: 'flex',
