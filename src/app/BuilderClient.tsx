@@ -10,8 +10,8 @@ const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
 const SHARE_URL_VERSION = '10';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
-const USER_NAME_STORAGE_KEY = '423club_marathon_user_name_v1';
 const VISITOR_SESSION_KEY = '423club_marathon_visited_session_v1';
+const VISITOR_COUNT_CACHE_KEY = '423club_marathon_visitor_count_v1';
 
 interface SavedBuild {
   id: string;
@@ -310,8 +310,7 @@ export default function BuilderClient() {
     try {
       const accepted = localStorage.getItem(TERMS_STORAGE_KEY);
       setTermsAccepted(accepted === 'true');
-      const savedUser = localStorage.getItem(USER_NAME_STORAGE_KEY);
-      if (savedUser) setUserName(savedUser);
+      localStorage.removeItem('423club_marathon_user_name_v1');
     } catch {
       setTermsAccepted(false);
     }
@@ -327,13 +326,11 @@ export default function BuilderClient() {
       fetchSingleBuild(buildId);
     } else {
       const pTitle = params.get('title');
-      const pUser = params.get('user');
       const pComment = params.get('comment');
       const pShell = params.get('shell');
       const pWeapon = params.get('weapon');
       const pMods = params.getAll('m');
       if (pTitle) setTitle(pTitle);
-      if (pUser) setUserName(pUser);
       if (pComment) setComment(pComment);
       if (pShell) setSelectedShell(pShell);
       if (pWeapon) setSelectedWeapon(pWeapon);
@@ -352,13 +349,22 @@ export default function BuilderClient() {
   }, []);
 
   const trackVisitor = async () => {
+    let cachedCount: number | null = null;
     try {
+      const rawCached = sessionStorage.getItem(VISITOR_COUNT_CACHE_KEY);
+      if (rawCached && !Number.isNaN(Number(rawCached))) {
+        cachedCount = Number(rawCached);
+        setVisitorCount(cachedCount);
+      }
+
       const alreadyCounted = sessionStorage.getItem(VISITOR_SESSION_KEY);
       if (!alreadyCounted) {
         const { data, error } = await supabase.rpc('increment_visitor_count');
-        if (!error && typeof data === 'number') {
-          setVisitorCount(data);
+        if (!error && data !== null && data !== undefined) {
+          const countNum = Number(data);
+          setVisitorCount(countNum);
           sessionStorage.setItem(VISITOR_SESSION_KEY, 'true');
+          sessionStorage.setItem(VISITOR_COUNT_CACHE_KEY, String(countNum));
           return;
         }
       }
@@ -369,10 +375,19 @@ export default function BuilderClient() {
     const { data, error } = await supabase
       .from('site_stats')
       .select('visitor_count')
-      .eq('id', 'main')
-      .single();
-    if (!error && data) {
-      setVisitorCount(Number(data.visitor_count));
+      .limit(1)
+      .maybeSingle();
+
+    if (!error && data && data.visitor_count !== null && data.visitor_count !== undefined) {
+      const latestNum = Number(data.visitor_count);
+      setVisitorCount(latestNum);
+      try {
+        sessionStorage.setItem(VISITOR_COUNT_CACHE_KEY, String(latestNum));
+      } catch {
+        // ignore
+      }
+    } else if (cachedCount !== null) {
+      setVisitorCount(cachedCount);
     }
   };
 
@@ -409,7 +424,6 @@ export default function BuilderClient() {
       .single();
     if (!error && data) {
       setTitle(data.title);
-      if (data.user_name) setUserName(data.user_name);
       setSelectedShell(data.shell_id);
       setSelectedWeapon(data.weapon_id);
       setSelectedMods(data.mods || {});
@@ -474,7 +488,6 @@ export default function BuilderClient() {
 
     if (!error && data) {
       try {
-        localStorage.setItem(USER_NAME_STORAGE_KEY, userName.trim());
         if (trimmedPin) {
           const existing = JSON.parse(localStorage.getItem(MY_PINS_STORAGE_KEY) || '{}');
           existing[data.id] = trimmedPin;
@@ -685,6 +698,7 @@ export default function BuilderClient() {
                 type="text"
                 required
                 maxLength={32}
+                autoComplete="off"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
                 placeholder={t.userNamePlaceholder}
@@ -696,6 +710,7 @@ export default function BuilderClient() {
               <input
                 type="text"
                 required
+                autoComplete="off"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder={t.titlePlaceholder}
@@ -790,6 +805,7 @@ export default function BuilderClient() {
               <label style={styles.optionalLabel}>{t.commentLabel}</label>
               <input
                 type="text"
+                autoComplete="off"
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
                 placeholder={t.commentPlaceholder}
@@ -802,6 +818,7 @@ export default function BuilderClient() {
                 type="text"
                 inputMode="numeric"
                 maxLength={4}
+                autoComplete="off"
                 value={deletePin}
                 onChange={(e) => setDeletePin(e.target.value.replace(/\D/g, '').slice(0, 4))}
                 placeholder={t.pinPlaceholder}
