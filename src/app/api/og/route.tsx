@@ -108,33 +108,37 @@ export async function GET(req: NextRequest) {
             color: '#f0f4f8',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
-            padding: '26px 36px',
+            justifyContent: 'flex-start',
+            gap: '18px',
+            paddingTop: '22px',
+            paddingLeft: '36px',
+            paddingRight: '36px',
+            paddingBottom: '78px',
             border: '6px solid #c8ff00',
             fontFamily: 'sans-serif',
           }}
         >
           {/* 最上段：サイトブランドヘッダー */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', color: '#c8ff00', fontSize: 21, fontWeight: 800, letterSpacing: '0.06em' }}>
+            <div style={{ display: 'flex', color: '#c8ff00', fontSize: 20, fontWeight: 800, letterSpacing: '0.06em' }}>
               423 Club // MARATHON BUILD &amp; SHARE CLASS SETUP
             </div>
             {userName && (
-              <div style={{ display: 'flex', fontSize: 23, fontWeight: 800, color: '#c8ff00' }}>
+              <div style={{ display: 'flex', fontSize: 22, fontWeight: 800, color: '#c8ff00' }}>
                 by {userName}
               </div>
             )}
           </div>
 
           {/* 中段：シェル顔画像 ＋ 大きなシェル名・武器名 ＋ ビルドタイトル・コメント */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', width: '100%' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', width: '100%' }}>
             {shellImageUrl ? (
               <div
                 style={{
                   display: 'flex',
-                  width: '164px',
-                  height: '164px',
-                  borderRadius: '16px',
+                  width: '144px',
+                  height: '144px',
+                  borderRadius: '14px',
                   border: '4px solid #c8ff00',
                   overflow: 'hidden',
                   backgroundColor: '#161a20',
@@ -144,24 +148,24 @@ export async function GET(req: NextRequest) {
                 <img
                   src={shellImageUrl}
                   alt={shell.name[lang] || shell.name.ja}
-                  width={164}
-                  height={164}
-                  style={{ width: '164px', height: '164px', objectFit: 'cover' }}
+                  width={144}
+                  height={144}
+                  style={{ width: '144px', height: '144px', objectFit: 'cover' }}
                 />
               </div>
             ) : (
               <div
                 style={{
                   display: 'flex',
-                  width: '164px',
-                  height: '164px',
-                  borderRadius: '16px',
+                  width: '144px',
+                  height: '144px',
+                  borderRadius: '14px',
                   border: '4px solid #2e3744',
                   backgroundColor: '#161a20',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#5a6678',
-                  fontSize: 68,
+                  fontSize: 60,
                   fontWeight: 800,
                   flexShrink: 0,
                 }}
@@ -170,7 +174,7 @@ export async function GET(req: NextRequest) {
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1 }}>
               {/* シェル名 & 武器名（大サイズ・高コントラスト） */}
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                 <div
@@ -178,9 +182,9 @@ export async function GET(req: NextRequest) {
                     display: 'flex',
                     backgroundColor: '#c8ff00',
                     color: '#0d0f12',
-                    padding: '6px 18px',
+                    padding: '5px 16px',
                     borderRadius: '8px',
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: 900,
                   }}
                 >
@@ -192,9 +196,9 @@ export async function GET(req: NextRequest) {
                     backgroundColor: '#1e2631',
                     border: '2px solid #3c4859',
                     color: '#ffffff',
-                    padding: '6px 20px',
+                    padding: '5px 18px',
                     borderRadius: '8px',
-                    fontSize: 30,
+                    fontSize: 28,
                     fontWeight: 900,
                   }}
                 >
@@ -203,7 +207,7 @@ export async function GET(req: NextRequest) {
               </div>
 
               {/* ビルドタイトル */}
-              <div style={{ display: 'flex', fontSize: 44, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
+              <div style={{ display: 'flex', fontSize: 40, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
                 {title.length > 22 ? `${title.slice(0, 22)}...` : title}
               </div>
 
@@ -212,19 +216,19 @@ export async function GET(req: NextRequest) {
                 <div
                   style={{
                     display: 'flex',
-                    fontSize: 22,
+                    fontSize: 20,
                     color: '#cbd5e1',
-                    lineHeight: 1.3,
+                    lineHeight: 1.28,
                   }}
                 >
-                  {comment.length > 52 ? `${comment.slice(0, 52)}...` : comment}
+                  {comment.length > 54 ? `${comment.slice(0, 54)}...` : comment}
                 </div>
               )}
             </div>
           </div>
 
-          {/* 下段：装着MOD・チップ一覧（ワイド2列で大きく表示） */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', width: '100%' }}>
+          {/* 下段：装着MOD・チップ一覧（X下部オーバーレイ回避のため上寄せ配置） */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', width: '100%' }}>
             {modEntries.length > 0 ? (
               modEntries.slice(0, 4).map((m, i) => (
                 <div
@@ -235,17 +239,17 @@ export async function GET(req: NextRequest) {
                     justifyContent: 'center',
                     backgroundColor: '#161a20',
                     borderLeft: '6px solid #c8ff00',
-                    padding: '12px 20px',
+                    padding: '10px 18px',
                     borderRadius: '8px',
-                    width: isFewMods ? '1116px' : '551px',
-                    gap: '4px',
+                    width: isFewMods ? '1116px' : '552px',
+                    gap: '3px',
                   }}
                 >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: 17, color: '#9aa8bc', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: 16, color: '#9aa8bc', fontWeight: 700 }}>
                       [{m.slot}]
                     </span>
-                    <span style={{ fontSize: 26, fontWeight: 800, color: '#ffffff' }}>
+                    <span style={{ fontSize: 24, fontWeight: 800, color: '#ffffff' }}>
                       {m.name}
                     </span>
                   </div>
@@ -253,9 +257,9 @@ export async function GET(req: NextRequest) {
                     <div
                       style={{
                         display: 'flex',
-                        fontSize: 19,
+                        fontSize: 17,
                         color: '#cbd5e1',
-                        lineHeight: 1.3,
+                        lineHeight: 1.25,
                       }}
                     >
                       {m.desc.length > 56 ? `${m.desc.slice(0, 56)}...` : m.desc}
@@ -264,7 +268,7 @@ export async function GET(req: NextRequest) {
                 </div>
               ))
             ) : (
-              <div style={{ display: 'flex', fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
+              <div style={{ display: 'flex', fontSize: 22, color: '#8b9bb4' }}>No Mods Equipped</div>
             )}
           </div>
         </div>

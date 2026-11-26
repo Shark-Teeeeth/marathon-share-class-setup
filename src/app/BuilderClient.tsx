@@ -7,6 +7,7 @@ import { supabase } from '../lib/supabase';
 type Lang = 'ja' | 'en' | 'ko';
 
 const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
+const SHARE_URL_VERSION = '7';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
 const USER_NAME_STORAGE_KEY = '423club_marathon_user_name_v1';
@@ -51,14 +52,14 @@ const UI_TEXT = {
     saveBtn: 'ビルドを保存してURL発行',
     savingBtn: '保存中...',
     copyParamBtn: '構成URLをコピー（DB保存なし）',
-    copiedMsg: 'コピーしました！Discord等に貼り付けて共有できます',
+    copiedMsg: 'コピーしました！DiscordやSNSに貼り付けて共有できます',
     listTitle: 'みんなの投稿ビルド一覧',
     searchUserPlaceholder: 'ユーザー名で検索...',
     filterShell: 'シェルで絞り込み：',
     filterWeapon: '武器で絞り込み：',
     allOption: 'すべて表示',
     loadBtn: 'この構成を読み込む',
-    shareBtn: 'Discord共有URLコピー',
+    shareBtn: '共有URLをコピー',
     deleteBtn: '削除',
     deleteModalTitle: 'ビルドの削除',
     deleteModalDesc: '作成時に設定した4桁のパスコードを入力してください。',
@@ -84,7 +85,7 @@ const UI_TEXT = {
     termsAgreeBtn: '上記規約に同意してサイトを利用する',
     aboutTitle: 'About This Tool / FAQ',
     aboutDesc:
-      '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord に貼るだけで構成カード画像を自動展開できます。',
+      '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord や SNS に貼るだけで構成カード画像を自動展開できます。',
   },
   en: {
     visitorLabel: 'VISITORS',
@@ -102,14 +103,14 @@ const UI_TEXT = {
     saveBtn: 'Save Build & Generate Share URL',
     savingBtn: 'Saving...',
     copyParamBtn: 'Copy Stateless URL (No DB Save)',
-    copiedMsg: 'Copied! Paste it into Discord to preview your build card.',
+    copiedMsg: 'Copied! Paste it into Discord or social media to share.',
     listTitle: 'Community Builds',
     searchUserPlaceholder: 'Search by username...',
     filterShell: 'Filter by Shell:',
     filterWeapon: 'Filter by Weapon:',
     allOption: 'All',
     loadBtn: 'Load Setup',
-    shareBtn: 'Copy Discord URL',
+    shareBtn: 'Copy Share URL',
     deleteBtn: 'Delete',
     deleteModalTitle: 'Delete Build',
     deleteModalDesc: 'Enter the 4-digit PIN you set when creating this build.',
@@ -135,7 +136,7 @@ const UI_TEXT = {
     termsAgreeBtn: 'I Agree to the Terms & Enter Site',
     aboutTitle: 'About This Tool / FAQ',
     aboutDesc:
-      '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
+      '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord or social media.',
   },
   ko: {
     visitorLabel: '방문자 수',
@@ -153,14 +154,14 @@ const UI_TEXT = {
     saveBtn: '빌드 저장 및 공유 URL 발급',
     savingBtn: '저장 중...',
     copyParamBtn: '구성 URL 복사 (DB 저장 안 함)',
-    copiedMsg: '복사되었습니다! Discord 등에 붙여넣어 공유하세요.',
+    copiedMsg: '복사되었습니다! Discord나 SNS에 붙여넣어 공유하세요.',
     listTitle: '커뮤니티 빌드 목록',
     searchUserPlaceholder: '사용자 이름으로 검색...',
     filterShell: '쉘 필터:',
     filterWeapon: '무기 필터:',
     allOption: '전체 보기',
     loadBtn: '이 구성 불러오기',
-    shareBtn: 'Discord 공유 URL 복사',
+    shareBtn: '공유 URL 복사',
     deleteBtn: '삭제',
     deleteModalTitle: '빌드 삭제',
     deleteModalDesc: '빌드 생성 시 설정한 4자리 비밀번호를 입력하세요.',
@@ -186,7 +187,7 @@ const UI_TEXT = {
     termsAgreeBtn: '위 약관에 동의하고 사이트 이용하기',
     aboutTitle: 'About This Tool / FAQ',
     aboutDesc:
-      '423 Club Marathon Build & Share Class Setup은 Bungie의 PvPvE 익스트랙션 슈터 Marathon을 위한 다국어 로드아웃 빌더입니다. 러너 쉘, 무기, 모드, 칩 업그레이드를 조합해 저장하고 Discord에서 자동으로 빌드 카드를 공유할 수 있습니다.',
+      '423 Club Marathon Build & Share Class Setup은 Bungie의 PvPvE 익스트랙션 슈터 Marathon을 위한 다국어 로드아웃 빌더입니다. 러너 쉘, 무기, 모드, 칩 업그레이드를 조합해 저장하고 Discord나 SNS에서 자동으로 빌드 카드를 공유할 수 있습니다.',
   },
 };
 
@@ -483,7 +484,7 @@ export default function BuilderClient() {
         // ignore
       }
 
-      const shareUrl = `${SITE_URL}/?id=${data.id}&lang=${lang}`;
+      const shareUrl = `${SITE_URL}/?id=${data.id}&lang=${lang}&v=${SHARE_URL_VERSION}`;
       await navigator.clipboard.writeText(shareUrl);
       showToast(t.copiedMsg);
       fetchBuilds();
@@ -495,6 +496,7 @@ export default function BuilderClient() {
   const handleCopyStatelessUrl = async () => {
     const params = new URLSearchParams();
     params.set('lang', lang);
+    params.set('v', SHARE_URL_VERSION);
     if (title.trim()) params.set('title', title.trim());
     if (userName.trim()) params.set('user', userName.trim());
     if (comment.trim()) params.set('comment', comment.trim());
@@ -923,7 +925,7 @@ export default function BuilderClient() {
                       </button>
                       <button
                         onClick={async () => {
-                          const url = `${SITE_URL}/?id=${b.id}&lang=${lang}`;
+                          const url = `${SITE_URL}/?id=${b.id}&lang=${lang}&v=${SHARE_URL_VERSION}`;
                           await navigator.clipboard.writeText(url);
                           showToast(t.copiedMsg);
                         }}

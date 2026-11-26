@@ -56,7 +56,7 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
 
   const ogParams = new URLSearchParams();
-  ogParams.set('v', '6');
+  ogParams.set('v', '7');
   ogParams.set('lang', lang);
   if (title) ogParams.set('title', title);
   if (userName) ogParams.set('user', userName);
