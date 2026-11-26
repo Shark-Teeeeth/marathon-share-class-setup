@@ -326,10 +326,14 @@ export default function BuilderClient() {
       fetchSingleBuild(buildId);
     } else {
       const pTitle = params.get('title');
+      const pUser = params.get('user');
+      const pComment = params.get('comment');
       const pShell = params.get('shell');
       const pWeapon = params.get('weapon');
       const pMods = params.getAll('m');
       if (pTitle) setTitle(pTitle);
+      if (pUser) setUserName(pUser);
+      if (pComment) setComment(pComment);
       if (pShell) setSelectedShell(pShell);
       if (pWeapon) setSelectedWeapon(pWeapon);
       if (pMods.length > 0) {
@@ -404,6 +408,7 @@ export default function BuilderClient() {
       .single();
     if (!error && data) {
       setTitle(data.title);
+      if (data.user_name) setUserName(data.user_name);
       setSelectedShell(data.shell_id);
       setSelectedWeapon(data.weapon_id);
       setSelectedMods(data.mods || {});

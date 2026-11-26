@@ -19,8 +19,10 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
 
   let title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
+  let userName = typeof resolvedParams.user === 'string' ? resolvedParams.user : '';
   let shellId = typeof resolvedParams.shell === 'string' ? resolvedParams.shell : 'all';
   let weaponId = typeof resolvedParams.weapon === 'string' ? resolvedParams.weapon : 'w_1';
+  let rawComment = typeof resolvedParams.comment === 'string' ? resolvedParams.comment : '';
   let description =
     'Bungie新作PvPvE脱出シューター『Marathon（マラソン）』のシェル・武器・MOD・チップ改造パーツ構成を作成・保存・Discordで画像カード共有できるビルドシミュレーター（日・英・韓対応）。';
   let modsMap: Record<string, string> = {};
@@ -29,9 +31,13 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
     const { data } = await supabase.from('builds').select('*').eq('id', id).single();
     if (data) {
       title = data.title || title;
+      userName = data.user_name || userName;
       shellId = data.shell_id || shellId;
       weaponId = data.weapon_id || weaponId;
-      if (data.comment) description = data.comment;
+      if (data.comment) {
+        rawComment = data.comment;
+        description = data.comment;
+      }
       if (data.mods && typeof data.mods === 'object') {
         modsMap = data.mods as Record<string, string>;
       }
@@ -50,8 +56,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   }
 
   const ogParams = new URLSearchParams();
+  ogParams.set('v', '3');
   ogParams.set('lang', lang);
   if (title) ogParams.set('title', title);
+  if (userName) ogParams.set('user', userName);
+  if (rawComment) ogParams.set('comment', rawComment);
   ogParams.set('shell', shellId);
   ogParams.set('weapon', weaponId);
   Object.entries(modsMap).forEach(([slot, mId]) => {
@@ -62,11 +71,11 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const weapon = setupData.weapons.find((w) => w.id === weaponId) || setupData.weapons[0];
 
   const pageTitle = title
-    ? `${title} | 423 Club - Marathon Build & Share Class Setup`
+    ? `${title}${userName ? ` (by ${userName})` : ''} | 423 Club`
     : '423 Club // MARATHON // BUILD & SHARE CLASS SETUP | マラソン 武器・MODビルド構成共有ツール';
 
   const fullDesc = title
-    ? `Shell: ${shell.name[lang]} / Weapon: ${weapon.name[lang]} - ${description}`
+    ? `Shell: ${shell.name[lang]} / Weapon: ${weapon.name[lang]}${rawComment ? ` - ${rawComment}` : ''}`
     : description;
 
   const ogImageUrl = `${BASE_URL}/api/og?${ogParams.toString()}`;
