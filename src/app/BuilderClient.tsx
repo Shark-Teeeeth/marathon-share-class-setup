@@ -190,22 +190,16 @@ const UI_TEXT = {
   },
 };
 
-function resolveShellSlug(shellId: string): string | null {
-  if (!shellId || shellId === 'all') return null;
-  const shellObj = setupData.shells.find((s) => s.id === shellId);
-  if (!shellObj) return shellId.toLowerCase();
-
-  const enName = (shellObj.name?.en || '').toLowerCase();
-  if (enName.includes('all')) return null;
-
-  const knownSlugs = ['destroyer', 'vandal', 'recon', 'assassin', 'triage', 'thief', 'sentinel'];
-  for (const slug of knownSlugs) {
-    if (enName.includes(slug) || shellId.toLowerCase().includes(slug)) {
-      return slug;
-    }
-  }
-  return enName.replace(/[^a-z0-9_-]/g, '') || shellId.toLowerCase();
-}
+const SHELL_IMAGE_MAP: Record<string, string> = {
+  shell_1: 'destroyer',
+  shell_2: 'vandal',
+  shell_3: 'recon',
+  shell_4: 'assassin',
+  shell_5: 'triage',
+  shell_6: 'thief',
+  shell_7: 'sentinel',
+  shell_8: 'bishop',
+};
 
 function ShellAvatar({
   shellId,
@@ -216,12 +210,11 @@ function ShellAvatar({
   alt: string;
   size?: number;
 }) {
-  const slug = resolveShellSlug(shellId);
-  const [extIndex, setExtIndex] = useState(0);
-  const extensions = ['png', 'jpg', 'jpeg', 'webp', 'PNG', 'JPG'];
+  const fileName = SHELL_IMAGE_MAP[shellId] || null;
+  const [imgError, setImgError] = useState(false);
 
   useEffect(() => {
-    setExtIndex(0);
+    setImgError(false);
   }, [shellId]);
 
   const boxStyle: React.CSSProperties = {
@@ -229,7 +222,7 @@ function ShellAvatar({
     height: `${size}px`,
     flexShrink: 0,
     backgroundColor: '#0d0f12',
-    border: slug && extIndex < extensions.length ? '1px solid #c8ff00' : '1px solid #2e3744',
+    border: fileName && !imgError ? '1px solid #c8ff00' : '1px solid #2e3744',
     borderRadius: '8px',
     overflow: 'hidden',
     display: 'flex',
@@ -237,7 +230,7 @@ function ShellAvatar({
     justifyContent: 'center',
   };
 
-  if (!slug || extIndex >= extensions.length) {
+  if (!fileName || imgError) {
     return (
       <div style={boxStyle} title={alt}>
         <span
@@ -258,14 +251,14 @@ function ShellAvatar({
   return (
     <div style={boxStyle} title={alt}>
       <img
-        src={`/shells/${slug}.${extensions[extIndex]}`}
+        src={`/shells/${fileName}.png`}
         alt={alt}
         style={{
           width: '100%',
           height: '100%',
           objectFit: 'cover',
         }}
-        onError={() => setExtIndex((prev) => prev + 1)}
+        onError={() => setImgError(true)}
       />
     </div>
   );
