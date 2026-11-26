@@ -26,15 +26,23 @@ const SHELL_IMAGE_MAP: Record<string, string> = {
   shell_8: 'bishop',
 };
 
+function normalizeGlyphs(text: string): string {
+  return text
+    .replace(/＋/g, '+')
+    .replace(/－/g, '-')
+    .replace(/％/g, '%')
+    .replace(/／/g, '/');
+}
+
 function getItemDescription(item: unknown, lang: 'ja' | 'en' | 'ko'): string {
   if (!item || typeof item !== 'object') return '';
   const record = item as Record<string, unknown>;
   const rawDesc = record.desc ?? record.description ?? record.effect ?? record.detail;
   if (!rawDesc) return '';
-  if (typeof rawDesc === 'string') return rawDesc;
+  if (typeof rawDesc === 'string') return normalizeGlyphs(rawDesc);
   if (typeof rawDesc === 'object') {
     const langObj = rawDesc as Record<string, string>;
-    return langObj[lang] || langObj.ja || langObj.en || '';
+    return normalizeGlyphs(langObj[lang] || langObj.ja || langObj.en || '');
   }
   return '';
 }
@@ -47,9 +55,11 @@ export async function GET(req: NextRequest) {
     const lang: 'ja' | 'en' | 'ko' =
       rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
 
-    const title = searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP';
-    const userName = searchParams.get('user') || '';
-    const comment = searchParams.get('comment') || '';
+    const title = normalizeGlyphs(
+      searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP'
+    );
+    const userName = normalizeGlyphs(searchParams.get('user') || '');
+    const comment = normalizeGlyphs(searchParams.get('comment') || '');
     const shellId = searchParams.get('shell') || 'all';
     const weaponId = searchParams.get('weapon') || 'w_1';
     const modsMap: Record<string, string> = {};
@@ -79,12 +89,14 @@ export async function GET(req: NextRequest) {
         const descText = getItemDescription(item, lang);
 
         return {
-          slot: translatedSlot,
-          name: item.name[lang] || item.name.ja,
+          slot: normalizeGlyphs(translatedSlot),
+          name: normalizeGlyphs(item.name[lang] || item.name.ja),
           desc: descText,
         };
       })
       .filter(Boolean) as { slot: string; name: string; desc: string }[];
+
+    const isFewMods = modEntries.length <= 2;
 
     const imgRes = new ImageResponse(
       (
@@ -97,7 +109,7 @@ export async function GET(req: NextRequest) {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '36px 48px',
+            padding: '28px 36px',
             border: '6px solid #c8ff00',
             fontFamily: 'sans-serif',
           }}
@@ -105,34 +117,34 @@ export async function GET(req: NextRequest) {
           {/* 上段：サイトタイトル ＋ シェル/武器バッジ */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <div style={{ display: 'flex', color: '#c8ff00', fontSize: 22, fontWeight: 800 }}>
-              423 Club // MARATHON BUILD &amp; SHARE CLASS SETUP
+              423 Club // MARATHON
             </div>
-            <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <div
                 style={{
                   display: 'flex',
                   backgroundColor: '#1f2630',
                   color: '#c8ff00',
-                  padding: '6px 16px',
+                  padding: '8px 20px',
                   borderRadius: '8px',
-                  fontSize: 20,
-                  fontWeight: 700,
+                  fontSize: 24,
+                  fontWeight: 800,
                 }}
               >
-                {shell.name[lang] || shell.name.ja}
+                {normalizeGlyphs(shell.name[lang] || shell.name.ja)}
               </div>
               <div
                 style={{
                   display: 'flex',
                   backgroundColor: '#1e2631',
-                  color: '#d0d8e4',
-                  padding: '6px 16px',
+                  color: '#ffffff',
+                  padding: '8px 20px',
                   borderRadius: '8px',
-                  fontSize: 20,
-                  fontWeight: 700,
+                  fontSize: 24,
+                  fontWeight: 800,
                 }}
               >
-                {weapon.name[lang] || weapon.name.ja}
+                {normalizeGlyphs(weapon.name[lang] || weapon.name.ja)}
               </div>
             </div>
           </div>
@@ -143,8 +155,8 @@ export async function GET(req: NextRequest) {
               <div
                 style={{
                   display: 'flex',
-                  width: '132px',
-                  height: '132px',
+                  width: '138px',
+                  height: '138px',
                   borderRadius: '14px',
                   border: '3px solid #c8ff00',
                   overflow: 'hidden',
@@ -155,24 +167,24 @@ export async function GET(req: NextRequest) {
                 <img
                   src={shellImageUrl}
                   alt={shell.name[lang] || shell.name.ja}
-                  width={132}
-                  height={132}
-                  style={{ width: '132px', height: '132px', objectFit: 'cover' }}
+                  width={138}
+                  height={138}
+                  style={{ width: '138px', height: '138px', objectFit: 'cover' }}
                 />
               </div>
             ) : (
               <div
                 style={{
                   display: 'flex',
-                  width: '132px',
-                  height: '132px',
+                  width: '138px',
+                  height: '138px',
                   borderRadius: '14px',
                   border: '3px solid #2e3744',
                   backgroundColor: '#161a20',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#5a6678',
-                  fontSize: 56,
+                  fontSize: 60,
                   fontWeight: 800,
                   flexShrink: 0,
                 }}
@@ -182,11 +194,11 @@ export async function GET(req: NextRequest) {
             )}
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-              <div style={{ display: 'flex', fontSize: 42, fontWeight: 900, color: '#ffffff', lineHeight: 1.15 }}>
-                {title}
+              <div style={{ display: 'flex', fontSize: 48, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
+                {title.length > 22 ? `${title.slice(0, 22)}...` : title}
               </div>
               {userName && (
-                <div style={{ display: 'flex', fontSize: 22, fontWeight: 700, color: '#c8ff00' }}>
+                <div style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: '#c8ff00' }}>
                   by {userName}
                 </div>
               )}
@@ -194,58 +206,60 @@ export async function GET(req: NextRequest) {
                 <div
                   style={{
                     display: 'flex',
-                    fontSize: 19,
-                    color: '#a3b8cc',
+                    fontSize: 23,
+                    color: '#d0d8e4',
                     marginTop: '2px',
-                    lineHeight: 1.35,
+                    lineHeight: 1.3,
                   }}
                 >
-                  {comment.length > 75 ? `${comment.slice(0, 75)}...` : comment}
+                  {comment.length > 52 ? `${comment.slice(0, 52)}...` : comment}
                 </div>
               )}
             </div>
           </div>
 
-          {/* 下段：装着MOD・チップ一覧（効果詳細付き） */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', width: '100%' }}>
+          {/* 下段：装着MOD・チップ一覧（ワイド2列で大きく表示） */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '14px', width: '100%' }}>
             {modEntries.length > 0 ? (
-              modEntries.map((m, i) => (
+              modEntries.slice(0, 4).map((m, i) => (
                 <div
                   key={i}
                   style={{
                     display: 'flex',
                     flexDirection: 'column',
+                    justifyContent: 'center',
                     backgroundColor: '#161a20',
-                    borderLeft: '5px solid #c8ff00',
-                    padding: '10px 18px',
-                    borderRadius: '6px',
-                    width: modEntries.length <= 3 ? '352px' : '262px',
+                    borderLeft: '6px solid #c8ff00',
+                    padding: '12px 20px',
+                    borderRadius: '8px',
+                    width: isFewMods ? '1116px' : '551px',
                     gap: '4px',
                   }}
                 >
-                  <div style={{ display: 'flex', fontSize: 14, color: '#8b9bb4', fontWeight: 600 }}>
-                    {m.slot}
-                  </div>
-                  <div style={{ display: 'flex', fontSize: 21, fontWeight: 800, color: '#ffffff' }}>
-                    {m.name}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: 17, color: '#9aa8bc', fontWeight: 700 }}>
+                      [{m.slot}]
+                    </span>
+                    <span style={{ fontSize: 26, fontWeight: 800, color: '#ffffff' }}>
+                      {m.name}
+                    </span>
                   </div>
                   {m.desc && (
                     <div
                       style={{
                         display: 'flex',
-                        fontSize: 14,
-                        color: '#b8c4d4',
-                        lineHeight: 1.35,
-                        marginTop: '2px',
+                        fontSize: 19,
+                        color: '#cbd5e1',
+                        lineHeight: 1.3,
                       }}
                     >
-                      {m.desc.length > 52 ? `${m.desc.slice(0, 52)}...` : m.desc}
+                      {m.desc.length > 56 ? `${m.desc.slice(0, 56)}...` : m.desc}
                     </div>
                   )}
                 </div>
               ))
             ) : (
-              <div style={{ display: 'flex', fontSize: 22, color: '#8b9bb4' }}>No Mods Equipped</div>
+              <div style={{ display: 'flex', fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
             )}
           </div>
         </div>
