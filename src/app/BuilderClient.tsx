@@ -9,9 +9,9 @@ type Lang = 'ja' | 'en' | 'ko';
 const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
 const SHARE_URL_VERSION = '10';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
-const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
 const VISITOR_SESSION_KEY = '423club_marathon_visited_session_v1';
 const VISITOR_COUNT_CACHE_KEY = '423club_marathon_visitor_count_v1';
+const MAX_DELETE_ATTEMPTS = 5;
 
 interface SavedBuild {
   id: string;
@@ -62,11 +62,13 @@ const UI_TEXT = {
     shareBtn: '共有URLをコピー',
     deleteBtn: '削除',
     deleteModalTitle: 'ビルドの削除',
-    deleteModalDesc: '作成時に設定した4桁のパスコードを入力してください。',
+    deleteModalDesc: '作成時に設定した4桁のパスコードを入力してください（試行上限：5回）。',
     deleteConfirmBtn: '削除を実行',
     deleteCancelBtn: 'キャンセル',
     deleteSuccess: 'ビルドを削除しました。',
-    deleteFail: 'パスコードが一致しないか、削除パスコードが未設定の投稿です。',
+    deleteFail: 'パスコードが一致しません。',
+    deleteNoPin: 'この投稿は削除パスコードが未設定のため削除できません。',
+    deleteLocked: '試行回数上限（5回）に達したため、このビルドの削除機能はロックされました。',
     pinInvalidAlert: '削除用パスコードは半角数字4桁で入力してください（空欄も可）。',
     noBuilds: '条件に一致するビルドがありません。',
     emptySlot: '-- 未装着 --',
@@ -80,7 +82,7 @@ const UI_TEXT = {
       '他者への誹謗中傷、差別的表現、暴力的・わいせつな内容、その他公序良俗に反する記載を禁止します。',
       'スパム行為、荒らし行為、サイト運営を妨害する不正アクセスや自動投稿を禁止します。',
       '上記に違反する投稿、または不適切と判断された投稿は、管理者権限により予告なく削除します。',
-      '誤って投稿した場合は、作成時に設定した4桁のパスコードを使用してご自身で削除できます。',
+      '誤って投稿した場合は、作成時に設定した4桁のパスコードを使用してご自身で削除できます（試行上限5回）。',
     ],
     termsAgreeBtn: '上記規約に同意してサイトを利用する',
     aboutTitle: 'About This Tool / FAQ',
@@ -113,11 +115,13 @@ const UI_TEXT = {
     shareBtn: 'Copy Share URL',
     deleteBtn: 'Delete',
     deleteModalTitle: 'Delete Build',
-    deleteModalDesc: 'Enter the 4-digit PIN you set when creating this build.',
+    deleteModalDesc: 'Enter the 4-digit PIN set when creating this build (Max 5 attempts).',
     deleteConfirmBtn: 'Confirm Delete',
     deleteCancelBtn: 'Cancel',
     deleteSuccess: 'Build deleted successfully.',
-    deleteFail: 'Incorrect PIN or no delete PIN was set for this build.',
+    deleteFail: 'Incorrect PIN.',
+    deleteNoPin: 'No delete PIN was set for this build.',
+    deleteLocked: 'Maximum delete attempts (5) exceeded. Deletion is locked for this build.',
     pinInvalidAlert: 'Please enter a 4-digit numeric PIN (or leave it blank).',
     noBuilds: 'No matching builds found.',
     emptySlot: '-- None --',
@@ -131,7 +135,7 @@ const UI_TEXT = {
       'Harassment, hate speech, discriminatory remarks, NSFW content, or anything offensive to public order and morals is strictly prohibited.',
       'Spamming, trolling, automated scraping, or any activity that disrupts the service is prohibited.',
       'Any content violating these guidelines will be removed by administrators without prior notice.',
-      'If you post by mistake, you can delete your own build using the 4-digit PIN set during creation.',
+      'If you post by mistake, you can delete your own build using the 4-digit PIN set during creation (max 5 attempts).',
     ],
     termsAgreeBtn: 'I Agree to the Terms & Enter Site',
     aboutTitle: 'About This Tool / FAQ',
@@ -164,11 +168,13 @@ const UI_TEXT = {
     shareBtn: '공유 URL 복사',
     deleteBtn: '삭제',
     deleteModalTitle: '빌드 삭제',
-    deleteModalDesc: '빌드 생성 시 설정한 4자리 비밀번호를 입력하세요.',
+    deleteModalDesc: '빌드 생성 시 설정한 4자리 비밀번호를 입력하세요 (최대 5회 시도).',
     deleteConfirmBtn: '삭제 실행',
     deleteCancelBtn: '취소',
     deleteSuccess: '빌드가 삭제되었습니다.',
-    deleteFail: '비밀번호가 일치하지 않거나 삭제 비밀번호가 설정되지 않은 게시물입니다.',
+    deleteFail: '비밀번호가 일치하지 않습니다.',
+    deleteNoPin: '삭제 비밀번호가 설정되지 않은 게시물입니다.',
+    deleteLocked: '시도 횟수 상한(5회)을 초과하여 이 빌드의 삭제가 잠겼습니다.',
     pinInvalidAlert: '삭제용 비밀번호는 숫자 4자리로 입력해 주세요 (비워두기 가능).',
     noBuilds: '조건에 일치하는 빌드가 없습니다.',
     emptySlot: '-- 미장착 --',
@@ -182,7 +188,7 @@ const UI_TEXT = {
       '타인에 대한 비방, 차별적 표현, 폭력적·음란한 내용 및 미풍양속에 반하는 게시물 작성을 금지합니다.',
       '스팸, 도배, 서비스 운영을 방해하는 부정 접근 및 자동 게시를 금지합니다.',
       '위 규정을 위반하거나 부적절하다고 판단되는 게시물은 관리자 권한으로 예고 없이 삭제됩니다.',
-      '실수로 게시한 경우, 생성 시 설정한 4자리 비밀번호를 입력하여 직접 삭제할 수 있습니다.',
+      '실수로 게시한 경우, 생성 시 설정한 4자리 비밀번호를 입력하여 직접 삭제할 수 있습니다 (최대 5회).',
     ],
     termsAgreeBtn: '위 약관에 동의하고 사이트 이용하기',
     aboutTitle: 'About This Tool / FAQ',
@@ -304,6 +310,7 @@ export default function BuilderClient() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [inputDeletePin, setInputDeletePin] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+  const [localAttemptCounts, setLocalAttemptCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
     setIsMounted(true);
@@ -311,6 +318,7 @@ export default function BuilderClient() {
       const accepted = localStorage.getItem(TERMS_STORAGE_KEY);
       setTermsAccepted(accepted === 'true');
       localStorage.removeItem('423club_marathon_user_name_v1');
+      localStorage.removeItem('423club_marathon_my_pins_v1');
     } catch {
       setTermsAccepted(false);
     }
@@ -487,16 +495,6 @@ export default function BuilderClient() {
     setIsSaving(false);
 
     if (!error && data) {
-      try {
-        if (trimmedPin) {
-          const existing = JSON.parse(localStorage.getItem(MY_PINS_STORAGE_KEY) || '{}');
-          existing[data.id] = trimmedPin;
-          localStorage.setItem(MY_PINS_STORAGE_KEY, JSON.stringify(existing));
-        }
-      } catch {
-        // ignore
-      }
-
       const shareUrl = `${SITE_URL}/?id=${data.id}&lang=${lang}&v=${SHARE_URL_VERSION}`;
       await navigator.clipboard.writeText(shareUrl);
       showToast(t.copiedMsg);
@@ -524,17 +522,22 @@ export default function BuilderClient() {
   };
 
   const openDeleteModal = (buildId: string) => {
-    setDeleteTargetId(buildId);
-    try {
-      const savedPins = JSON.parse(localStorage.getItem(MY_PINS_STORAGE_KEY) || '{}');
-      setInputDeletePin(savedPins[buildId] || '');
-    } catch {
-      setInputDeletePin('');
+    if ((localAttemptCounts[buildId] || 0) >= MAX_DELETE_ATTEMPTS) {
+      alert(t.deleteLocked);
+      return;
     }
+    setDeleteTargetId(buildId);
+    setInputDeletePin('');
   };
 
   const handleExecuteDelete = async () => {
     if (!deleteTargetId) return;
+    if ((localAttemptCounts[deleteTargetId] || 0) >= MAX_DELETE_ATTEMPTS) {
+      alert(t.deleteLocked);
+      setDeleteTargetId(null);
+      setInputDeletePin('');
+      return;
+    }
     if (!/^\d{4}$/.test(inputDeletePin.trim())) {
       alert(t.pinInvalidAlert);
       return;
@@ -547,13 +550,44 @@ export default function BuilderClient() {
     });
     setIsDeleting(false);
 
-    if (!error && data === true) {
+    if (error) {
+      alert(t.deleteFail);
+      return;
+    }
+
+    const status = String(data);
+
+    if (status === 'DELETED') {
       setDeleteTargetId(null);
       setInputDeletePin('');
       showToast(t.deleteSuccess);
       fetchBuilds();
+    } else if (status === 'LOCKED') {
+      setLocalAttemptCounts((prev) => ({
+        ...prev,
+        [deleteTargetId]: MAX_DELETE_ATTEMPTS,
+      }));
+      setDeleteTargetId(null);
+      setInputDeletePin('');
+      alert(t.deleteLocked);
+    } else if (status === 'NO_PIN') {
+      setDeleteTargetId(null);
+      setInputDeletePin('');
+      alert(t.deleteNoPin);
     } else {
-      alert(t.deleteFail);
+      const nextCount = (localAttemptCounts[deleteTargetId] || 0) + 1;
+      setLocalAttemptCounts((prev) => ({
+        ...prev,
+        [deleteTargetId]: nextCount,
+      }));
+      setInputDeletePin('');
+      if (nextCount >= MAX_DELETE_ATTEMPTS) {
+        setDeleteTargetId(null);
+        alert(t.deleteLocked);
+      } else {
+        const remaining = MAX_DELETE_ATTEMPTS - nextCount;
+        alert(`${t.deleteFail} (${remaining}/${MAX_DELETE_ATTEMPTS})`);
+      }
     }
   };
 
@@ -614,6 +648,7 @@ export default function BuilderClient() {
               type="password"
               inputMode="numeric"
               maxLength={4}
+              autoComplete="new-password"
               value={inputDeletePin}
               onChange={(e) => setInputDeletePin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="0000"
@@ -634,7 +669,10 @@ export default function BuilderClient() {
                 {t.deleteConfirmBtn}
               </button>
               <button
-                onClick={() => setDeleteTargetId(null)}
+                onClick={() => {
+                  setDeleteTargetId(null);
+                  setInputDeletePin('');
+                }}
                 style={styles.secondaryBtn}
               >
                 {t.deleteCancelBtn}
