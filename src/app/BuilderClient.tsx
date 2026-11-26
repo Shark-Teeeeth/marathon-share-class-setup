@@ -9,9 +9,11 @@ type Lang = 'ja' | 'en' | 'ko';
 const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
+const USER_NAME_STORAGE_KEY = '423club_marathon_user_name_v1';
 
 interface SavedBuild {
   id: string;
+  user_name: string | null;
   title: string;
   shell_id: string;
   weapon_id: string;
@@ -33,7 +35,8 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 
 const UI_TEXT = {
   ja: {
-    titlePlaceholder: 'ビルド名を入力（例：対人近距離特化カスタム）',
+    userNamePlaceholder: 'ユーザー名を入力【必須】（例：Shijimi）',
+    titlePlaceholder: 'ビルド名を入力【必須】（例：対人近距離特化カスタム）',
     shellLabel: '1. シェルを選択',
     weaponLabel: '2. 武器を選択',
     modsLabel: '3. 装着パーツ・チップを選択',
@@ -45,6 +48,7 @@ const UI_TEXT = {
     copyParamBtn: '構成URLをコピー（DB保存なし）',
     copiedMsg: 'コピーしました！Discord等に貼り付けて共有できます',
     listTitle: 'みんなの投稿ビルド一覧',
+    searchUserPlaceholder: 'ユーザー名で検索...',
     filterShell: 'シェルで絞り込み：',
     filterWeapon: '武器で絞り込み：',
     allOption: 'すべて表示',
@@ -58,9 +62,10 @@ const UI_TEXT = {
     deleteSuccess: 'ビルドを削除しました。',
     deleteFail: 'パスコードが一致しないか、削除パスコードが未設定の投稿です。',
     pinInvalidAlert: '削除用パスコードは半角数字4桁で入力してください（空欄も可）。',
-    noBuilds: 'まだ投稿されたビルドがありません。最初のビルドを作成してみましょう！',
+    noBuilds: '条件に一致するビルドがありません。',
     emptySlot: '-- 未装着 --',
-    alertNoTitle: 'ビルド名を入力してください',
+    alertNoUserName: 'ユーザー名を入力してください（必須項目です）',
+    alertNoTitle: 'ビルド名を入力してください（必須項目です）',
     termsTitle: 'ご利用にあたって（利用規約・注意事項）',
     termsIntro:
       '本サイト「423 Club // MARATHON // BUILD & SHARE CLASS SETUP」は、世界中のプレイヤーが自由にビルド構成を作成・共有できるコミュニティツールです。以下のルールに同意のうえご利用ください。',
@@ -77,7 +82,8 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord に貼るだけで構成カード画像を自動展開できます。',
   },
   en: {
-    titlePlaceholder: 'Enter Build Title (e.g., Close-Range PvP Shredder)',
+    userNamePlaceholder: 'Enter Username [Required] (e.g., Shijimi)',
+    titlePlaceholder: 'Enter Build Title [Required] (e.g., Close-Range PvP Shredder)',
     shellLabel: '1. Select Runner Shell',
     weaponLabel: '2. Select Weapon',
     modsLabel: '3. Select Mods & Chip Upgrades',
@@ -89,6 +95,7 @@ const UI_TEXT = {
     copyParamBtn: 'Copy Stateless URL (No DB Save)',
     copiedMsg: 'Copied! Paste it into Discord to preview your build card.',
     listTitle: 'Community Builds',
+    searchUserPlaceholder: 'Search by username...',
     filterShell: 'Filter by Shell:',
     filterWeapon: 'Filter by Weapon:',
     allOption: 'All',
@@ -102,9 +109,10 @@ const UI_TEXT = {
     deleteSuccess: 'Build deleted successfully.',
     deleteFail: 'Incorrect PIN or no delete PIN was set for this build.',
     pinInvalidAlert: 'Please enter a 4-digit numeric PIN (or leave it blank).',
-    noBuilds: 'No builds submitted yet. Be the first to share your setup!',
+    noBuilds: 'No matching builds found.',
     emptySlot: '-- None --',
-    alertNoTitle: 'Please enter a build title.',
+    alertNoUserName: 'Please enter your username (Required).',
+    alertNoTitle: 'Please enter a build title (Required).',
     termsTitle: 'Terms of Use & Community Guidelines',
     termsIntro:
       'Welcome to "423 Club // MARATHON // BUILD & SHARE CLASS SETUP", a global community tool for sharing Marathon loadouts. Please read and agree to the following rules before entering:',
@@ -121,7 +129,8 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
   },
   ko: {
-    titlePlaceholder: '빌드 이름 입력 (예: 근거리 PvP 특화 세팅)',
+    userNamePlaceholder: '사용자 이름 입력 [필수] (예: Shijimi)',
+    titlePlaceholder: '빌드 이름 입력 [필수] (예: 근거리 PvP 특화 세팅)',
     shellLabel: '1. 쉘 선택',
     weaponLabel: '2. 무기 선택',
     modsLabel: '3. 장착 부품 및 칩 선택',
@@ -133,6 +142,7 @@ const UI_TEXT = {
     copyParamBtn: '구성 URL 복사 (DB 저장 안 함)',
     copiedMsg: '복사되었습니다! Discord 등에 붙여넣어 공유하세요.',
     listTitle: '커뮤니티 빌드 목록',
+    searchUserPlaceholder: '사용자 이름으로 검색...',
     filterShell: '쉘 필터:',
     filterWeapon: '무기 필터:',
     allOption: '전체 보기',
@@ -146,9 +156,10 @@ const UI_TEXT = {
     deleteSuccess: '빌드가 삭제되었습니다.',
     deleteFail: '비밀번호가 일치하지 않거나 삭제 비밀번호가 설정되지 않은 게시물입니다.',
     pinInvalidAlert: '삭제용 비밀번호는 숫자 4자리로 입력해 주세요 (비워두기 가능).',
-    noBuilds: '아직 등록된 빌드가 없습니다. 첫 번째 빌드를 만들어 보세요!',
+    noBuilds: '조건에 일치하는 빌드가 없습니다.',
     emptySlot: '-- 미장착 --',
-    alertNoTitle: '빌드 이름을 입력해 주세요.',
+    alertNoUserName: '사용자 이름을 입력해 주세요 (필수 항목).',
+    alertNoTitle: '빌드 이름을 입력해 주세요 (필수 항목).',
     termsTitle: '이용약관 및 주의사항',
     termsIntro:
       '"423 Club // MARATHON // BUILD & SHARE CLASS SETUP"은 전 세계 플레이어가 자유롭게 빌드 구성을 만들고 공유하는 커뮤니티 도구입니다. 아래 규칙에 동의한 후 이용해 주세요.',
@@ -173,6 +184,7 @@ export default function BuilderClient() {
   const [termsAccepted, setTermsAccepted] = useState<boolean>(true);
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
+  const [userName, setUserName] = useState('');
   const [title, setTitle] = useState('');
   const [selectedShell, setSelectedShell] = useState<string>('all');
   const [selectedWeapon, setSelectedWeapon] = useState<string>(setupData.weapons[0]?.id || 'w_1');
@@ -181,6 +193,7 @@ export default function BuilderClient() {
   const [deletePin, setDeletePin] = useState('');
 
   const [builds, setBuilds] = useState<SavedBuild[]>([]);
+  const [searchUserQuery, setSearchUserQuery] = useState<string>('');
   const [filterShell, setFilterShell] = useState<string>('all_filter');
   const [filterWeapon, setFilterWeapon] = useState<string>('all_filter');
   const [isSaving, setIsSaving] = useState(false);
@@ -195,6 +208,8 @@ export default function BuilderClient() {
     try {
       const accepted = localStorage.getItem(TERMS_STORAGE_KEY);
       setTermsAccepted(accepted === 'true');
+      const savedUser = localStorage.getItem(USER_NAME_STORAGE_KEY);
+      if (savedUser) setUserName(savedUser);
     } catch {
       setTermsAccepted(false);
     }
@@ -246,9 +261,9 @@ export default function BuilderClient() {
   const fetchBuilds = async () => {
     const { data, error } = await supabase
       .from('builds')
-      .select('id, title, shell_id, weapon_id, mods, comment, created_at')
+      .select('id, user_name, title, shell_id, weapon_id, mods, comment, created_at')
       .order('created_at', { ascending: false })
-      .limit(50);
+      .limit(100);
     if (!error && data) {
       setBuilds(data as SavedBuild[]);
     }
@@ -257,7 +272,7 @@ export default function BuilderClient() {
   const fetchSingleBuild = async (id: string) => {
     const { data, error } = await supabase
       .from('builds')
-      .select('id, title, shell_id, weapon_id, mods, comment, created_at')
+      .select('id, user_name, title, shell_id, weapon_id, mods, comment, created_at')
       .eq('id', id)
       .single();
     if (!error && data) {
@@ -287,6 +302,10 @@ export default function BuilderClient() {
   };
 
   const handleSaveAndShare = async () => {
+    if (!userName.trim()) {
+      alert(t.alertNoUserName);
+      return;
+    }
     if (!title.trim()) {
       alert(t.alertNoTitle);
       return;
@@ -302,6 +321,7 @@ export default function BuilderClient() {
       .from('builds')
       .insert([
         {
+          user_name: userName.trim(),
           title: title.trim(),
           shell_id: selectedShell,
           weapon_id: selectedWeapon,
@@ -316,14 +336,15 @@ export default function BuilderClient() {
     setIsSaving(false);
 
     if (!error && data) {
-      if (trimmedPin) {
-        try {
+      try {
+        localStorage.setItem(USER_NAME_STORAGE_KEY, userName.trim());
+        if (trimmedPin) {
           const existing = JSON.parse(localStorage.getItem(MY_PINS_STORAGE_KEY) || '{}');
           existing[data.id] = trimmedPin;
           localStorage.setItem(MY_PINS_STORAGE_KEY, JSON.stringify(existing));
-        } catch {
-          // ignore
         }
+      } catch {
+        // ignore
       }
 
       const shareUrl = `${SITE_URL}/?id=${data.id}&lang=${lang}`;
@@ -384,12 +405,17 @@ export default function BuilderClient() {
   };
 
   const filteredBuilds = useMemo(() => {
+    const query = searchUserQuery.trim().toLowerCase();
     return builds.filter((b) => {
       if (filterShell !== 'all_filter' && b.shell_id !== filterShell) return false;
       if (filterWeapon !== 'all_filter' && b.weapon_id !== filterWeapon) return false;
+      if (query !== '') {
+        const author = (b.user_name || '').toLowerCase();
+        if (!author.includes(query)) return false;
+      }
       return true;
     });
-  }, [builds, filterShell, filterWeapon]);
+  }, [builds, filterShell, filterWeapon, searchUserQuery]);
 
   return (
     <div style={styles.container}>
@@ -501,13 +527,25 @@ export default function BuilderClient() {
 
       <main style={styles.main}>
         <section style={styles.card}>
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder={t.titlePlaceholder}
-            style={styles.input}
-          />
+          <div style={styles.gridUserTitle}>
+            <input
+              type="text"
+              required
+              maxLength={32}
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              placeholder={t.userNamePlaceholder}
+              style={styles.input}
+            />
+            <input
+              type="text"
+              required
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder={t.titlePlaceholder}
+              style={styles.input}
+            />
+          </div>
 
           <div style={styles.gridTwo}>
             <div>
@@ -614,6 +652,14 @@ export default function BuilderClient() {
           <div style={styles.listHeader}>
             <h2 style={styles.sectionTitle}>{t.listTitle}</h2>
             <div style={styles.filterRow}>
+              <input
+                type="text"
+                value={searchUserQuery}
+                onChange={(e) => setSearchUserQuery(e.target.value)}
+                placeholder={t.searchUserPlaceholder}
+                style={styles.searchInput}
+              />
+
               <select
                 value={filterShell}
                 onChange={(e) => setFilterShell(e.target.value)}
@@ -660,6 +706,9 @@ export default function BuilderClient() {
                       </span>
                     </div>
                     <h3 style={styles.buildTitle}>{b.title}</h3>
+                    {b.user_name && (
+                      <div style={styles.authorTag}>by {b.user_name}</div>
+                    )}
                     {b.comment && <p style={styles.buildComment}>{b.comment}</p>}
                     <div style={styles.modTags}>
                       {Object.entries(b.mods || {}).map(([slot, mId]) => {
@@ -857,6 +906,11 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: '20px',
   },
+  gridUserTitle: {
+    display: 'grid',
+    gridTemplateColumns: 'minmax(220px, 1fr) minmax(260px, 2fr)',
+    gap: '12px',
+  },
   input: {
     width: '100%',
     backgroundColor: '#0d0f12',
@@ -984,6 +1038,15 @@ const styles: Record<string, React.CSSProperties> = {
     gap: '10px',
     flexWrap: 'wrap',
   },
+  searchInput: {
+    backgroundColor: '#161a20',
+    border: '1px solid #2e3744',
+    color: '#f0f4f8',
+    padding: '8px 12px',
+    borderRadius: '6px',
+    fontSize: '13px',
+    minWidth: '180px',
+  },
   filterSelect: {
     backgroundColor: '#161a20',
     border: '1px solid #2e3744',
@@ -1037,6 +1100,12 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '16px',
     fontWeight: 700,
+  },
+  authorTag: {
+    fontSize: '12px',
+    color: '#c8ff00',
+    fontWeight: 600,
+    marginTop: '-4px',
   },
   buildComment: {
     margin: 0,
