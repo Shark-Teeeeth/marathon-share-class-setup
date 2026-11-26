@@ -10,6 +10,7 @@ const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
 const USER_NAME_STORAGE_KEY = '423club_marathon_user_name_v1';
+const VISITOR_SESSION_KEY = '423club_marathon_visited_session_v1';
 
 interface SavedBuild {
   id: string;
@@ -35,6 +36,7 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 
 const UI_TEXT = {
   ja: {
+    visitorLabel: 'VISITORS / 訪問者数',
     userNameLabel: '1. ユーザー名を入力',
     userNamePlaceholder: '例：Shijimi',
     titleLabel: '2. ビルド名を入力',
@@ -85,6 +87,7 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord に貼るだけで構成カード画像を自動展開できます。',
   },
   en: {
+    visitorLabel: 'VISITORS',
     userNameLabel: '1. Enter Username',
     userNamePlaceholder: 'e.g., Shijimi',
     titleLabel: '2. Enter Build Title',
@@ -135,6 +138,7 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
   },
   ko: {
+    visitorLabel: 'VISITORS / 방문자 수',
     userNameLabel: '1. 사용자 이름 입력',
     userNamePlaceholder: '예: Shijimi',
     titleLabel: '2. 빌드 이름 입력',
@@ -186,17 +190,98 @@ const UI_TEXT = {
   },
 };
 
+function resolveShellSlug(shellId: string): string | null {
+  if (!shellId || shellId === 'all') return null;
+  const shellObj = setupData.shells.find((s) => s.id === shellId);
+  if (!shellObj) return shellId.toLowerCase();
+
+  const enName = (shellObj.name?.en || '').toLowerCase();
+  if (enName.includes('all')) return null;
+
+  const knownSlugs = ['destroyer', 'vandal', 'recon', 'assassin', 'triage', 'thief', 'sentinel'];
+  for (const slug of knownSlugs) {
+    if (enName.includes(slug) || shellId.toLowerCase().includes(slug)) {
+      return slug;
+    }
+  }
+  return enName.replace(/[^a-z0-9_-]/g, '') || shellId.toLowerCase();
+}
+
+function ShellAvatar({
+  shellId,
+  alt,
+  size = 56,
+}: {
+  shellId: string;
+  alt: string;
+  size?: number;
+}) {
+  const slug = resolveShellSlug(shellId);
+  const [extIndex, setExtIndex] = useState(0);
+  const extensions = ['png', 'jpg', 'webp'];
+
+  useEffect(() => {
+    setExtIndex(0);
+  }, [shellId]);
+
+  const boxStyle: React.CSSProperties = {
+    width: `${size}px`,
+    height: `${size}px`,
+    flexShrink: 0,
+    backgroundColor: '#0d0f12',
+    border: slug && extIndex < extensions.length ? '1px solid #c8ff00' : '1px solid #2e3744',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  if (!slug || extIndex >= extensions.length) {
+    return (
+      <div style={boxStyle} title={alt}>
+        <span
+          style={{
+            color: '#5a6678',
+            fontSize: `${Math.round(size * 0.45)}px`,
+            fontWeight: 700,
+            lineHeight: 1,
+            userSelect: 'none',
+          }}
+        >
+          ×
+        </span>
+      </div>
+    );
+  }
+
+  return (
+    <div style={boxStyle} title={alt}>
+      <img
+        src={`/shells/${slug}.${extensions[extIndex]}`}
+        alt={alt}
+        style={{
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+        }}
+        onError={() => setExtIndex((prev) => prev + 1)}
+      />
+    </div>
+  );
+}
+
 export default function BuilderClient() {
   const [lang, setLang] = useState<Lang>('ja');
   const t = UI_TEXT[lang];
 
   const [termsAccepted, setTermsAccepted] = useState<boolean>(true);
   const [isMounted, setIsMounted] = useState<boolean>(false);
+  const [visitorCount, setVisitorCount] = useState<number | null>(null);
 
   const [userName, setUserName] = useState('');
   const [title, setTitle] = useState('');
   const [selectedShell, setSelectedShell] = useState<string>('all');
-  const [shellImgError, setShellImgError] = useState<boolean>(false);
   const [selectedWeapon, setSelectedWeapon] = useState<string>(setupData.weapons[0]?.id || 'w_1');
   const [selectedMods, setSelectedMods] = useState<Record<string, string>>({});
   const [comment, setComment] = useState('');
@@ -212,10 +297,6 @@ export default function BuilderClient() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [inputDeletePin, setInputDeletePin] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
-
-  useEffect(() => {
-    setShellImgError(false);
-  }, [selectedShell]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -255,8 +336,34 @@ export default function BuilderClient() {
       }
     }
 
+    trackVisitor();
     fetchBuilds();
   }, []);
+
+  const trackVisitor = async () => {
+    try {
+      const alreadyCounted = sessionStorage.getItem(VISITOR_SESSION_KEY);
+      if (!alreadyCounted) {
+        const { data, error } = await supabase.rpc('increment_visitor_count');
+        if (!error && typeof data === 'number') {
+          setVisitorCount(data);
+          sessionStorage.setItem(VISITOR_SESSION_KEY, 'true');
+          return;
+        }
+      }
+    } catch {
+      // sessionStorage 制限時フォールバック
+    }
+
+    const { data, error } = await supabase
+      .from('site_stats')
+      .select('visitor_count')
+      .eq('id', 'main')
+      .single();
+    if (!error && data) {
+      setVisitorCount(Number(data.visitor_count));
+    }
+  };
 
   const handleAcceptTerms = () => {
     try {
@@ -435,8 +542,6 @@ export default function BuilderClient() {
     });
   }, [builds, filterShell, filterWeapon, searchUserQuery]);
 
-  const showShellImage = selectedShell !== 'all' && !shellImgError;
-
   return (
     <div style={styles.container}>
       {isMounted && !termsAccepted && (
@@ -529,19 +634,29 @@ export default function BuilderClient() {
           </div>
         </div>
 
-        <div style={styles.langSwitch}>
-          {(['ja', 'en', 'ko'] as Lang[]).map((l) => (
-            <button
-              key={l}
-              onClick={() => setLang(l)}
-              style={{
-                ...styles.langBtn,
-                ...(lang === l ? styles.langBtnActive : {}),
-              }}
-            >
-              {l.toUpperCase()}
-            </button>
-          ))}
+        <div style={styles.headerRight}>
+          <div style={styles.visitorBadge}>
+            <span style={styles.visitorDot} />
+            <span style={styles.visitorLabelText}>{t.visitorLabel}</span>
+            <span style={styles.visitorCountText}>
+              {visitorCount !== null ? visitorCount.toLocaleString() : '---'}
+            </span>
+          </div>
+
+          <div style={styles.langSwitch}>
+            {(['ja', 'en', 'ko'] as Lang[]).map((l) => (
+              <button
+                key={l}
+                onClick={() => setLang(l)}
+                style={{
+                  ...styles.langBtn,
+                  ...(lang === l ? styles.langBtnActive : {}),
+                }}
+              >
+                {l.toUpperCase()}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -579,16 +694,11 @@ export default function BuilderClient() {
             <div>
               <label style={styles.label}>{t.shellLabel}</label>
               <div style={styles.shellSelectorRow}>
-                {showShellImage && (
-                  <div style={styles.shellImageBox}>
-                    <img
-                      src={`/shells/${selectedShell}.png`}
-                      alt={currentShellObj ? currentShellObj.name[lang] : selectedShell}
-                      style={styles.shellImage}
-                      onError={() => setShellImgError(true)}
-                    />
-                  </div>
-                )}
+                <ShellAvatar
+                  shellId={selectedShell}
+                  alt={currentShellObj ? currentShellObj.name[lang] : selectedShell}
+                  size={56}
+                />
                 <select
                   value={selectedShell}
                   onChange={(e) => setSelectedShell(e.target.value)}
@@ -740,20 +850,25 @@ export default function BuilderClient() {
               {filteredBuilds.map((b) => {
                 const shellObj = setupData.shells.find((s) => s.id === b.shell_id);
                 const weaponObj = setupData.weapons.find((w) => w.id === b.weapon_id);
+                const shellLabel = shellObj ? shellObj.name[lang] : b.shell_id;
                 return (
                   <div key={b.id} style={styles.buildCard}>
-                    <div style={styles.buildCardTop}>
-                      <span style={styles.badge}>
-                        {shellObj ? shellObj.name[lang] : b.shell_id}
-                      </span>
-                      <span style={styles.weaponBadge}>
-                        {weaponObj ? weaponObj.name[lang] : b.weapon_id}
-                      </span>
+                    <div style={styles.buildCardHeader}>
+                      <ShellAvatar shellId={b.shell_id} alt={shellLabel} size={46} />
+                      <div style={styles.buildCardMeta}>
+                        <div style={styles.buildCardBadges}>
+                          <span style={styles.badge}>{shellLabel}</span>
+                          <span style={styles.weaponBadge}>
+                            {weaponObj ? weaponObj.name[lang] : b.weapon_id}
+                          </span>
+                        </div>
+                        <h3 style={styles.buildTitle}>{b.title}</h3>
+                        {b.user_name && (
+                          <div style={styles.authorTag}>by {b.user_name}</div>
+                        )}
+                      </div>
                     </div>
-                    <h3 style={styles.buildTitle}>{b.title}</h3>
-                    {b.user_name && (
-                      <div style={styles.authorTag}>by {b.user_name}</div>
-                    )}
+
                     {b.comment && <p style={styles.buildComment}>{b.comment}</p>}
                     <div style={styles.modTags}>
                       {Object.entries(b.mods || {}).map(([slot, mId]) => {
@@ -918,6 +1033,40 @@ const styles: Record<string, React.CSSProperties> = {
     letterSpacing: '0.16em',
     color: '#8b9bb4',
   },
+  headerRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    flexWrap: 'wrap',
+  },
+  visitorBadge: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+    backgroundColor: '#161a20',
+    border: '1px solid #2c3440',
+    padding: '6px 14px',
+    borderRadius: '6px',
+  },
+  visitorDot: {
+    width: '8px',
+    height: '8px',
+    borderRadius: '50%',
+    backgroundColor: '#c8ff00',
+    boxShadow: '0 0 8px #c8ff00',
+  },
+  visitorLabelText: {
+    fontSize: '11px',
+    fontWeight: 700,
+    letterSpacing: '0.06em',
+    color: '#8b9bb4',
+  },
+  visitorCountText: {
+    fontSize: '14px',
+    fontWeight: 800,
+    fontVariantNumeric: 'tabular-nums',
+    color: '#c8ff00',
+  },
   langSwitch: {
     display: 'flex',
     gap: '8px',
@@ -976,23 +1125,6 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'flex',
     alignItems: 'center',
     gap: '12px',
-  },
-  shellImageBox: {
-    width: '56px',
-    height: '56px',
-    flexShrink: 0,
-    backgroundColor: '#0d0f12',
-    border: '1px solid #c8ff00',
-    borderRadius: '8px',
-    overflow: 'hidden',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  shellImage: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
   },
   gridCommentPin: {
     display: 'grid',
@@ -1145,23 +1277,35 @@ const styles: Record<string, React.CSSProperties> = {
     flexDirection: 'column',
     gap: '10px',
   },
-  buildCardTop: {
+  buildCardHeader: {
     display: 'flex',
-    justifyContent: 'space-between',
-    gap: '8px',
-    fontSize: '12px',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  buildCardMeta: {
+    flex: 1,
+    minWidth: 0,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+  },
+  buildCardBadges: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '6px',
+    fontSize: '11px',
   },
   badge: {
     backgroundColor: '#232933',
     color: '#c8ff00',
-    padding: '3px 8px',
+    padding: '2px 8px',
     borderRadius: '4px',
     fontWeight: 700,
   },
   weaponBadge: {
     backgroundColor: '#1e2631',
     color: '#a3b8cc',
-    padding: '3px 8px',
+    padding: '2px 8px',
     borderRadius: '4px',
     fontWeight: 600,
   },
@@ -1169,12 +1313,14 @@ const styles: Record<string, React.CSSProperties> = {
     margin: 0,
     fontSize: '16px',
     fontWeight: 700,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   authorTag: {
     fontSize: '12px',
     color: '#c8ff00',
     fontWeight: 600,
-    marginTop: '-4px',
   },
   buildComment: {
     margin: 0,
