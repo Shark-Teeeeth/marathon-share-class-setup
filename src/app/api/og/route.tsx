@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og';
 import { NextRequest } from 'next/server';
 import setupData from '../../../../data/setup_data.json';
-import { supabase } from '../../../lib/supabase';
 
 export const runtime = 'edge';
 
@@ -25,12 +24,28 @@ export async function GET(req: NextRequest) {
     let modsMap: Record<string, string> = {};
 
     if (buildId) {
-      const { data } = await supabase.from('builds').select('*').eq('id', buildId).single();
-      if (data) {
-        title = data.title;
-        shellId = data.shell_id;
-        weaponId = data.weapon_id;
-        modsMap = data.mods || {};
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+      if (supabaseUrl && supabaseKey) {
+        const res = await fetch(
+          `${supabaseUrl}/rest/v1/builds?id=eq.${encodeURIComponent(buildId)}&select=*`,
+          {
+            headers: {
+              apikey: supabaseKey,
+              Authorization: `Bearer ${supabaseKey}`,
+            },
+          }
+        );
+        if (res.ok) {
+          const rows = await res.json();
+          const data = rows?.[0];
+          if (data) {
+            title = data.title || title;
+            shellId = data.shell_id || shellId;
+            weaponId = data.weapon_id || weaponId;
+            modsMap = data.mods || {};
+          }
+        }
       }
     } else {
       searchParams.getAll('m').forEach((pair) => {
@@ -60,7 +75,7 @@ export async function GET(req: NextRequest) {
       })
       .filter(Boolean) as { slot: string; name: string }[];
 
-    return new ImageResponse(
+    const imgRes = new ImageResponse(
       (
         <div
           style={{
@@ -76,12 +91,13 @@ export async function GET(req: NextRequest) {
             fontFamily: 'sans-serif',
           }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ color: '#c8ff00', fontSize: 28, fontWeight: 800, letterSpacing: '0.1em' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', color: '#c8ff00', fontSize: 28, fontWeight: 800 }}>
               423 Club // MARATHON BUILD &amp; SHARE CLASS SETUP
             </div>
             <div
               style={{
+                display: 'flex',
                 backgroundColor: '#1f2630',
                 color: '#c8ff00',
                 padding: '8px 20px',
@@ -94,14 +110,16 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ fontSize: 52, fontWeight: 900, color: '#ffffff' }}>{title}</div>
-            <div style={{ fontSize: 36, fontWeight: 700, color: '#c8ff00' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%' }}>
+            <div style={{ display: 'flex', fontSize: 52, fontWeight: 900, color: '#ffffff' }}>
+              {title}
+            </div>
+            <div style={{ display: 'flex', fontSize: 36, fontWeight: 700, color: '#c8ff00' }}>
               WEAPON: {weapon.name[lang] || weapon.name.ja}
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', width: '100%' }}>
             {modEntries.length > 0 ? (
               modEntries.map((m, i) => (
                 <div
@@ -116,20 +134,32 @@ export async function GET(req: NextRequest) {
                     minWidth: '250px',
                   }}
                 >
-                  <span style={{ fontSize: 18, color: '#8b9bb4' }}>{m.slot}</span>
-                  <span style={{ fontSize: 26, fontWeight: 700, color: '#f0f4f8' }}>{m.name}</span>
+                  <div style={{ display: 'flex', fontSize: 18, color: '#8b9bb4' }}>{m.slot}</div>
+                  <div style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: '#f0f4f8' }}>{m.name}</div>
                 </div>
               ))
             ) : (
-              <div style={{ fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
+              <div style={{ display: 'flex', fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
             )}
           </div>
         </div>
       ),
       { width: 1200, height: 630 }
     );
+
+    const pngBuffer = await imgRes.arrayBuffer();
+    return new Response(pngBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'image/png',
+        'Cache-Control': 'public, max-age=60',
+      },
+    });
   } catch (e) {
-    const msg = e instanceof Error ? e.message : String(e);
-    return new Response(`OG Image Error: ${msg}`, { status: 500 });
+    const msg = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
+    return new Response(`OG Image Error:\n${msg}`, {
+      status: 500,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    });
   }
 }
