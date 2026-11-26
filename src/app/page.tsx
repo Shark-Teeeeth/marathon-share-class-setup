@@ -22,30 +22,40 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   let shellId = typeof resolvedParams.shell === 'string' ? resolvedParams.shell : 'all';
   let weaponId = typeof resolvedParams.weapon === 'string' ? resolvedParams.weapon : 'w_1';
   let description = 'MARATHON // BUILD & SHARE CLASS SETUP';
+  let modsMap: Record<string, string> = {};
+
+  if (id) {
+    const { data } = await supabase.from('builds').select('*').eq('id', id).single();
+    if (data) {
+      title = data.title || title;
+      shellId = data.shell_id || shellId;
+      weaponId = data.weapon_id || weaponId;
+      if (data.comment) description = data.comment;
+      if (data.mods && typeof data.mods === 'object') {
+        modsMap = data.mods as Record<string, string>;
+      }
+    }
+  } else {
+    const mRaw = resolvedParams.m;
+    if (Array.isArray(mRaw)) {
+      mRaw.forEach((v) => {
+        const [s, mId] = v.split(':');
+        if (s && mId) modsMap[s] = mId;
+      });
+    } else if (typeof mRaw === 'string') {
+      const [s, mId] = mRaw.split(':');
+      if (s && mId) modsMap[s] = mId;
+    }
+  }
 
   const ogParams = new URLSearchParams();
   ogParams.set('lang', lang);
-
-  if (id) {
-    ogParams.set('id', id);
-    const { data } = await supabase.from('builds').select('*').eq('id', id).single();
-    if (data) {
-      title = data.title;
-      shellId = data.shell_id;
-      weaponId = data.weapon_id;
-      if (data.comment) description = data.comment;
-    }
-  } else {
-    if (title) ogParams.set('title', title);
-    ogParams.set('shell', shellId);
-    ogParams.set('weapon', weaponId);
-    const mRaw = resolvedParams.m;
-    if (Array.isArray(mRaw)) {
-      mRaw.forEach((v) => ogParams.append('m', v));
-    } else if (typeof mRaw === 'string') {
-      ogParams.append('m', mRaw);
-    }
-  }
+  if (title) ogParams.set('title', title);
+  ogParams.set('shell', shellId);
+  ogParams.set('weapon', weaponId);
+  Object.entries(modsMap).forEach(([slot, mId]) => {
+    if (mId) ogParams.append('m', `${slot}:${mId}`);
+  });
 
   const shell = setupData.shells.find((s) => s.id === shellId) || setupData.shells[0];
   const weapon = setupData.weapons.find((w) => w.id === weaponId) || setupData.weapons[0];
