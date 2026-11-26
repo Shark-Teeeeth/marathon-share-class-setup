@@ -109,56 +109,33 @@ export async function GET(req: NextRequest) {
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'space-between',
-            padding: '28px 36px',
+            padding: '26px 36px',
             border: '6px solid #c8ff00',
             fontFamily: 'sans-serif',
           }}
         >
-          {/* 上段：サイトタイトル ＋ シェル/武器バッジ */}
+          {/* 最上段：サイトブランドヘッダー */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', color: '#c8ff00', fontSize: 22, fontWeight: 800 }}>
-              423 Club // MARATHON
+            <div style={{ display: 'flex', color: '#c8ff00', fontSize: 21, fontWeight: 800, letterSpacing: '0.06em' }}>
+              423 Club // MARATHON BUILD &amp; SHARE CLASS SETUP
             </div>
-            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  backgroundColor: '#1f2630',
-                  color: '#c8ff00',
-                  padding: '8px 20px',
-                  borderRadius: '8px',
-                  fontSize: 24,
-                  fontWeight: 800,
-                }}
-              >
-                {normalizeGlyphs(shell.name[lang] || shell.name.ja)}
+            {userName && (
+              <div style={{ display: 'flex', fontSize: 23, fontWeight: 800, color: '#c8ff00' }}>
+                by {userName}
               </div>
-              <div
-                style={{
-                  display: 'flex',
-                  backgroundColor: '#1e2631',
-                  color: '#ffffff',
-                  padding: '8px 20px',
-                  borderRadius: '8px',
-                  fontSize: 24,
-                  fontWeight: 800,
-                }}
-              >
-                {normalizeGlyphs(weapon.name[lang] || weapon.name.ja)}
-              </div>
-            </div>
+            )}
           </div>
 
-          {/* 中段：シェル画像 ＋ ビルド名・投稿者名・コメント */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', width: '100%' }}>
+          {/* 中段：シェル顔画像 ＋ 大きなシェル名・武器名 ＋ ビルドタイトル・コメント */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', width: '100%' }}>
             {shellImageUrl ? (
               <div
                 style={{
                   display: 'flex',
-                  width: '138px',
-                  height: '138px',
-                  borderRadius: '14px',
-                  border: '3px solid #c8ff00',
+                  width: '164px',
+                  height: '164px',
+                  borderRadius: '16px',
+                  border: '4px solid #c8ff00',
                   overflow: 'hidden',
                   backgroundColor: '#161a20',
                   flexShrink: 0,
@@ -167,24 +144,24 @@ export async function GET(req: NextRequest) {
                 <img
                   src={shellImageUrl}
                   alt={shell.name[lang] || shell.name.ja}
-                  width={138}
-                  height={138}
-                  style={{ width: '138px', height: '138px', objectFit: 'cover' }}
+                  width={164}
+                  height={164}
+                  style={{ width: '164px', height: '164px', objectFit: 'cover' }}
                 />
               </div>
             ) : (
               <div
                 style={{
                   display: 'flex',
-                  width: '138px',
-                  height: '138px',
-                  borderRadius: '14px',
-                  border: '3px solid #2e3744',
+                  width: '164px',
+                  height: '164px',
+                  borderRadius: '16px',
+                  border: '4px solid #2e3744',
                   backgroundColor: '#161a20',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#5a6678',
-                  fontSize: 60,
+                  fontSize: 68,
                   fontWeight: 800,
                   flexShrink: 0,
                 }}
@@ -193,22 +170,50 @@ export async function GET(req: NextRequest) {
               </div>
             )}
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', flex: 1 }}>
-              <div style={{ display: 'flex', fontSize: 48, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+              {/* シェル名 & 武器名（大サイズ・高コントラスト） */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    backgroundColor: '#c8ff00',
+                    color: '#0d0f12',
+                    padding: '6px 18px',
+                    borderRadius: '8px',
+                    fontSize: 30,
+                    fontWeight: 900,
+                  }}
+                >
+                  {normalizeGlyphs(shell.name[lang] || shell.name.ja)}
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    backgroundColor: '#1e2631',
+                    border: '2px solid #3c4859',
+                    color: '#ffffff',
+                    padding: '6px 20px',
+                    borderRadius: '8px',
+                    fontSize: 30,
+                    fontWeight: 900,
+                  }}
+                >
+                  {normalizeGlyphs(weapon.name[lang] || weapon.name.ja)}
+                </div>
+              </div>
+
+              {/* ビルドタイトル */}
+              <div style={{ display: 'flex', fontSize: 44, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
                 {title.length > 22 ? `${title.slice(0, 22)}...` : title}
               </div>
-              {userName && (
-                <div style={{ display: 'flex', fontSize: 26, fontWeight: 700, color: '#c8ff00' }}>
-                  by {userName}
-                </div>
-              )}
+
+              {/* コメント */}
               {comment && (
                 <div
                   style={{
                     display: 'flex',
-                    fontSize: 23,
-                    color: '#d0d8e4',
-                    marginTop: '2px',
+                    fontSize: 22,
+                    color: '#cbd5e1',
                     lineHeight: 1.3,
                   }}
                 >
