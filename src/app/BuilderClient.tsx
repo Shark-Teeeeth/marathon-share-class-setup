@@ -35,11 +35,13 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 
 const UI_TEXT = {
   ja: {
-    userNamePlaceholder: 'ユーザー名を入力【必須】（例：Shijimi）',
-    titlePlaceholder: 'ビルド名を入力【必須】（例：対人近距離特化カスタム）',
-    shellLabel: '1. シェルを選択',
-    weaponLabel: '2. 武器を選択',
-    modsLabel: '3. 装着パーツ・チップを選択',
+    userNameLabel: '1. ユーザー名を入力（必須）',
+    userNamePlaceholder: '例：Shijimi',
+    titleLabel: '2. ビルド名を入力（必須）',
+    titlePlaceholder: '例：対人近距離特化カスタム',
+    shellLabel: '3. シェルを選択',
+    weaponLabel: '4. 武器を選択',
+    modsLabel: '5. 装着パーツ・チップを選択',
     commentPlaceholder: '立ち回りメモ・コメント（任意）',
     pinLabel: '削除用4桁パスコード（任意）',
     pinPlaceholder: '例: 1234',
@@ -64,8 +66,8 @@ const UI_TEXT = {
     pinInvalidAlert: '削除用パスコードは半角数字4桁で入力してください（空欄も可）。',
     noBuilds: '条件に一致するビルドがありません。',
     emptySlot: '-- 未装着 --',
-    alertNoUserName: 'ユーザー名を入力してください（必須項目です）',
-    alertNoTitle: 'ビルド名を入力してください（必須項目です）',
+    alertNoUserName: '1. ユーザー名を入力してください（必須項目です）',
+    alertNoTitle: '2. ビルド名を入力してください（必須項目です）',
     termsTitle: 'ご利用にあたって（利用規約・注意事項）',
     termsIntro:
       '本サイト「423 Club // MARATHON // BUILD & SHARE CLASS SETUP」は、世界中のプレイヤーが自由にビルド構成を作成・共有できるコミュニティツールです。以下のルールに同意のうえご利用ください。',
@@ -82,11 +84,13 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord に貼るだけで構成カード画像を自動展開できます。',
   },
   en: {
-    userNamePlaceholder: 'Enter Username [Required] (e.g., Shijimi)',
-    titlePlaceholder: 'Enter Build Title [Required] (e.g., Close-Range PvP Shredder)',
-    shellLabel: '1. Select Runner Shell',
-    weaponLabel: '2. Select Weapon',
-    modsLabel: '3. Select Mods & Chip Upgrades',
+    userNameLabel: '1. Enter Username (Required)',
+    userNamePlaceholder: 'e.g., Shijimi',
+    titleLabel: '2. Enter Build Title (Required)',
+    titlePlaceholder: 'e.g., Close-Range PvP Shredder',
+    shellLabel: '3. Select Runner Shell',
+    weaponLabel: '4. Select Weapon',
+    modsLabel: '5. Select Mods & Chip Upgrades',
     commentPlaceholder: 'Playstyle notes / comments (Optional)',
     pinLabel: '4-Digit Delete PIN (Optional)',
     pinPlaceholder: 'e.g. 1234',
@@ -111,8 +115,8 @@ const UI_TEXT = {
     pinInvalidAlert: 'Please enter a 4-digit numeric PIN (or leave it blank).',
     noBuilds: 'No matching builds found.',
     emptySlot: '-- None --',
-    alertNoUserName: 'Please enter your username (Required).',
-    alertNoTitle: 'Please enter a build title (Required).',
+    alertNoUserName: 'Please enter 1. Username (Required).',
+    alertNoTitle: 'Please enter 2. Build Title (Required).',
     termsTitle: 'Terms of Use & Community Guidelines',
     termsIntro:
       'Welcome to "423 Club // MARATHON // BUILD & SHARE CLASS SETUP", a global community tool for sharing Marathon loadouts. Please read and agree to the following rules before entering:',
@@ -129,11 +133,13 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
   },
   ko: {
-    userNamePlaceholder: '사용자 이름 입력 [필수] (예: Shijimi)',
-    titlePlaceholder: '빌드 이름 입력 [필수] (예: 근거리 PvP 특화 세팅)',
-    shellLabel: '1. 쉘 선택',
-    weaponLabel: '2. 무기 선택',
-    modsLabel: '3. 장착 부품 및 칩 선택',
+    userNameLabel: '1. 사용자 이름 입력 (필수)',
+    userNamePlaceholder: '예: Shijimi',
+    titleLabel: '2. 빌드 이름 입력 (필수)',
+    titlePlaceholder: '예: 근거리 PvP 특화 세팅',
+    shellLabel: '3. 쉘 선택',
+    weaponLabel: '4. 무기 선택',
+    modsLabel: '5. 장착 부품 및 칩 선택',
     commentPlaceholder: '운용 팁 / 코멘트 (선택 사항)',
     pinLabel: '삭제용 4자리 비밀번호 (선택)',
     pinPlaceholder: '예: 1234',
@@ -158,8 +164,8 @@ const UI_TEXT = {
     pinInvalidAlert: '삭제용 비밀번호는 숫자 4자리로 입력해 주세요 (비워두기 가능).',
     noBuilds: '조건에 일치하는 빌드가 없습니다.',
     emptySlot: '-- 미장착 --',
-    alertNoUserName: '사용자 이름을 입력해 주세요 (필수 항목).',
-    alertNoTitle: '빌드 이름을 입력해 주세요 (필수 항목).',
+    alertNoUserName: '1. 사용자 이름을 입력해 주세요 (필수 항목).',
+    alertNoTitle: '2. 빌드 이름을 입력해 주세요 (필수 항목).',
     termsTitle: '이용약관 및 주의사항',
     termsIntro:
       '"423 Club // MARATHON // BUILD & SHARE CLASS SETUP"은 전 세계 플레이어가 자유롭게 빌드 구성을 만들고 공유하는 커뮤니티 도구입니다. 아래 규칙에 동의한 후 이용해 주세요.',
@@ -528,23 +534,29 @@ export default function BuilderClient() {
       <main style={styles.main}>
         <section style={styles.card}>
           <div style={styles.gridUserTitle}>
-            <input
-              type="text"
-              required
-              maxLength={32}
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder={t.userNamePlaceholder}
-              style={styles.input}
-            />
-            <input
-              type="text"
-              required
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder={t.titlePlaceholder}
-              style={styles.input}
-            />
+            <div>
+              <label style={styles.label}>{t.userNameLabel}</label>
+              <input
+                type="text"
+                required
+                maxLength={32}
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder={t.userNamePlaceholder}
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label style={styles.label}>{t.titleLabel}</label>
+              <input
+                type="text"
+                required
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder={t.titlePlaceholder}
+                style={styles.input}
+              />
+            </div>
           </div>
 
           <div style={styles.gridTwo}>
@@ -908,8 +920,8 @@ const styles: Record<string, React.CSSProperties> = {
   },
   gridUserTitle: {
     display: 'grid',
-    gridTemplateColumns: 'minmax(220px, 1fr) minmax(260px, 2fr)',
-    gap: '12px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
+    gap: '16px',
   },
   input: {
     width: '100%',
