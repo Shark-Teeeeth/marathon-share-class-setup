@@ -21,7 +21,8 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   let title = typeof resolvedParams.title === 'string' ? resolvedParams.title : '';
   let shellId = typeof resolvedParams.shell === 'string' ? resolvedParams.shell : 'all';
   let weaponId = typeof resolvedParams.weapon === 'string' ? resolvedParams.weapon : 'w_1';
-  let description = 'MARATHON // BUILD & SHARE CLASS SETUP';
+  let description =
+    'Bungie新作PvPvE脱出シューター『Marathon（マラソン）』のシェル・武器・MOD・チップ改造パーツ構成を作成・保存・Discordで画像カード共有できるビルドシミュレーター（日・英・韓対応）。';
   let modsMap: Record<string, string> = {};
 
   if (id) {
@@ -61,19 +62,49 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
   const weapon = setupData.weapons.find((w) => w.id === weaponId) || setupData.weapons[0];
 
   const pageTitle = title
-    ? `${title} | 423 Club`
-    : '423 Club // MARATHON // BUILD & SHARE CLASS SETUP';
+    ? `${title} | 423 Club - Marathon Build & Share Class Setup`
+    : '423 Club // MARATHON // BUILD & SHARE CLASS SETUP | マラソン 武器・MODビルド構成共有ツール';
 
-  const fullDesc = `Shell: ${shell.name[lang]} / Weapon: ${weapon.name[lang]} - ${description}`;
+  const fullDesc = title
+    ? `Shell: ${shell.name[lang]} / Weapon: ${weapon.name[lang]} - ${description}`
+    : description;
+
   const ogImageUrl = `${BASE_URL}/api/og?${ogParams.toString()}`;
 
   return {
     title: pageTitle,
     description: fullDesc,
+    keywords: [
+      'Marathon',
+      'Bungie',
+      'マラソン',
+      'ビルド',
+      '武器構成',
+      'カスタム',
+      'MOD',
+      'Class Setup',
+      'Loadout Builder',
+      '423 Club',
+      '마라톤',
+      '빌드',
+    ],
+    alternates: {
+      canonical: id ? `${BASE_URL}/?id=${id}&lang=${lang}` : BASE_URL,
+      languages: {
+        ja: `${BASE_URL}/?lang=ja`,
+        en: `${BASE_URL}/?lang=en`,
+        ko: `${BASE_URL}/?lang=ko`,
+      },
+    },
+    robots: {
+      index: true,
+      follow: true,
+    },
     openGraph: {
       title: pageTitle,
       description: fullDesc,
       type: 'website',
+      siteName: '423 Club // MARATHON BUILD & SHARE CLASS SETUP',
       url: id ? `${BASE_URL}/?id=${id}&lang=${lang}` : BASE_URL,
       images: [
         {
@@ -94,5 +125,33 @@ export async function generateMetadata({ searchParams }: Props): Promise<Metadat
 }
 
 export default function HomePage() {
-  return <BuilderClient />;
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: '423 Club // MARATHON // BUILD & SHARE CLASS SETUP',
+    url: BASE_URL,
+    applicationCategory: 'GameApplication',
+    operatingSystem: 'Web',
+    inLanguage: ['ja', 'en', 'ko'],
+    description:
+      'A multilingual loadout and class setup builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, save builds, and share rich OGP cards on Discord.',
+    about: {
+      '@type': 'VideoGame',
+      name: 'Marathon',
+      author: {
+        '@type': 'Organization',
+        name: 'Bungie',
+      },
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <BuilderClient />
+    </>
+  );
 }
