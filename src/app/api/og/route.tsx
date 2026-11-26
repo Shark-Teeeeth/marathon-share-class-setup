@@ -12,7 +12,9 @@ const CHIP_LABELS = {
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const buildId = searchParams.get('id');
-  const lang = (searchParams.get('lang') as 'ja' | 'en' | 'ko') || 'ja';
+  const rawLang = searchParams.get('lang');
+  const lang: 'ja' | 'en' | 'ko' =
+    rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
 
   let title = searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP';
   let shellId = searchParams.get('shell') || 'all';
@@ -42,14 +44,14 @@ export async function GET(req: NextRequest) {
       const mId = modsMap[slot];
       if (!mId) return null;
       const isChip = slot === 'チップ';
-      const item = isChip
-        ? setupData.chips.find((c) => c.id === mId)
-        : setupData.mods.find((m) => m.id === mId);
+      const modItem = setupData.mods.find((m) => m.id === mId);
+      const chipItem = setupData.chips.find((c) => c.id === mId);
+      const item = isChip ? chipItem : modItem;
       if (!item) return null;
 
       const translatedSlot = isChip
         ? CHIP_LABELS[lang]
-        : ('slot_label' in item && item.slot_label?.[lang]) || slot;
+        : modItem?.slot_label?.[lang] || slot;
 
       return { slot: translatedSlot, name: item.name[lang] || item.name.ja };
     })

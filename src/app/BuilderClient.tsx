@@ -91,7 +91,6 @@ export default function BuilderClient() {
   const [searchText, setSearchText] = useState('');
   const [toast, setToast] = useState('');
 
-  // ビルドID × 言語ごとの翻訳キャッシュ
   const [translatedMap, setTranslatedMap] = useState<Record<string, Record<string, { title: string; comment: string }>>>({});
   const [isTranslating, setIsTranslating] = useState(false);
 
@@ -115,7 +114,6 @@ export default function BuilderClient() {
     fetchBuilds();
   }, [filterShell, filterWeapon]);
 
-  // 言語または一覧データが変わったときに未翻訳のタイトル・コメントを自動翻訳
   useEffect(() => {
     if (builds.length === 0) return;
 
@@ -369,7 +367,8 @@ export default function BuilderClient() {
             const candidates = isChip
               ? setupData.chips
               : setupData.mods.filter((m) => m.slot === slotKey && m.compatible_weapons.includes(weaponId));
-            const slotTitle = isChip ? t.chipLabel : candidates[0]?.slot_label[lang] || slotKey;
+            const firstMod = candidates[0] as { slot_label?: Record<Lang, string> } | undefined;
+            const slotTitle = isChip ? t.chipLabel : firstMod?.slot_label?.[lang] || slotKey;
             const currentVal = selectedMods[slotKey] || '';
             const selectedItem = candidates.find((c) => c.id === currentVal);
 
@@ -468,14 +467,14 @@ export default function BuilderClient() {
                   {Object.entries(b.mods || {}).map(([slot, mId]) => {
                     if (!mId) return null;
                     const isChip = slot === 'チップ';
-                    const item = isChip
-                      ? setupData.chips.find((c) => c.id === mId)
-                      : setupData.mods.find((m) => m.id === mId);
+                    const modItem = setupData.mods.find((m) => m.id === mId);
+                    const chipItem = setupData.chips.find((c) => c.id === mId);
+                    const item = isChip ? chipItem : modItem;
                     if (!item) return null;
 
                     const translatedSlot = isChip
                       ? t.chipLabel
-                      : ('slot_label' in item && item.slot_label?.[lang]) || slot;
+                      : modItem?.slot_label?.[lang] || slot;
 
                     return (
                       <span key={slot} style={{ background: '#0d0f12', border: '1px solid #2a313c', padding: '4px 10px', borderRadius: 4, fontSize: '0.8rem' }}>
