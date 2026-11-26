@@ -108,11 +108,12 @@ export async function GET(req: NextRequest) {
             color: '#f0f4f8',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'space-between',
+            justifyContent: 'flex-start',
+            gap: '24px',
             paddingTop: '24px',
             paddingLeft: '36px',
             paddingRight: '36px',
-            paddingBottom: '50px',
+            paddingBottom: '64px',
             border: '6px solid #c8ff00',
             fontFamily: 'sans-serif',
           }}
@@ -135,8 +136,8 @@ export async function GET(req: NextRequest) {
               <div
                 style={{
                   display: 'flex',
-                  width: '164px',
-                  height: '164px',
+                  width: '160px',
+                  height: '160px',
                   borderRadius: '16px',
                   border: '4px solid #c8ff00',
                   overflow: 'hidden',
@@ -147,24 +148,24 @@ export async function GET(req: NextRequest) {
                 <img
                   src={shellImageUrl}
                   alt={shell.name[lang] || shell.name.ja}
-                  width={164}
-                  height={164}
-                  style={{ width: '164px', height: '164px', objectFit: 'cover' }}
+                  width={160}
+                  height={160}
+                  style={{ width: '160px', height: '160px', objectFit: 'cover' }}
                 />
               </div>
             ) : (
               <div
                 style={{
                   display: 'flex',
-                  width: '164px',
-                  height: '164px',
+                  width: '160px',
+                  height: '160px',
                   borderRadius: '16px',
                   border: '4px solid #2e3744',
                   backgroundColor: '#161a20',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#5a6678',
-                  fontSize: 68,
+                  fontSize: 66,
                   fontWeight: 800,
                   flexShrink: 0,
                 }}
@@ -226,7 +227,7 @@ export async function GET(req: NextRequest) {
             </div>
           </div>
 
-          {/* 下段：装着MOD・チップ一覧（アイコンとの間隔を詰めつつ下端余白を確保） */}
+          {/* 下段：装着MOD・チップ一覧 */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', width: '100%' }}>
             {modEntries.length > 0 ? (
               modEntries.slice(0, 4).map((m, i) => (
