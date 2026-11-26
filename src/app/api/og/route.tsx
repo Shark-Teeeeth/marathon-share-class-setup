@@ -4,58 +4,33 @@ import setupData from '../../../../data/setup_data.json';
 
 export const runtime = 'edge';
 
-const CHIP_LABELS = {
-  ja: 'チップ改造パーツ',
-  en: 'Chip Mod',
-  ko: '칩 개조 부품',
+const SLOT_LABELS: Record<string, { ja: string; en: string; ko: string }> = {
+  オプティック: { ja: 'オプティック', en: 'Optic', ko: '조준경' },
+  バレル: { ja: 'バレル', en: 'Barrel', ko: '총열' },
+  マガジン: { ja: 'マガジン', en: 'Magazine', ko: '탄창' },
+  ストック: { ja: 'ストック', en: 'Stock', ko: '개머리판' },
+  グリップ: { ja: 'グリップ', en: 'Grip', ko: '손잡이' },
+  アンダーバレル: { ja: 'アンダーバレル', en: 'Underbarrel', ko: '하부 총열' },
+  マズル: { ja: 'マズル', en: 'Muzzle', ko: '총구' },
+  チップ: { ja: 'チップ改造パーツ', en: 'Chip Mod', ko: '칩 개조 부품' },
 };
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const buildId = searchParams.get('id');
     const rawLang = searchParams.get('lang');
     const lang: 'ja' | 'en' | 'ko' =
       rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
 
-    let title = searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP';
-    let shellId = searchParams.get('shell') || 'all';
-    let weaponId = searchParams.get('weapon') || 'w_1';
-    let modsMap: Record<string, string> = {};
+    const title = searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP';
+    const shellId = searchParams.get('shell') || 'all';
+    const weaponId = searchParams.get('weapon') || 'w_1';
+    const modsMap: Record<string, string> = {};
 
-    if (buildId) {
-      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-      const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-      if (supabaseUrl && supabaseKey) {
-        const cleanUrl = supabaseUrl.replace(/\/$/, '');
-        const res = await fetch(
-          `${cleanUrl}/rest/v1/builds?id=eq.${buildId}&select=*`,
-          {
-            cache: 'no-store',
-            headers: {
-              apikey: supabaseKey,
-              Authorization: `Bearer ${supabaseKey}`,
-              Accept: 'application/json',
-            },
-          }
-        );
-        if (res.ok) {
-          const rows = await res.json();
-          const data = Array.isArray(rows) ? rows[0] : null;
-          if (data) {
-            title = data.title || title;
-            shellId = data.shell_id || shellId;
-            weaponId = data.weapon_id || weaponId;
-            modsMap = typeof data.mods === 'object' && data.mods !== null ? data.mods : {};
-          }
-        }
-      }
-    } else {
-      searchParams.getAll('m').forEach((pair) => {
-        const [slot, id] = pair.split(':');
-        if (slot && id) modsMap[slot] = id;
-      });
-    }
+    searchParams.getAll('m').forEach((pair) => {
+      const [slot, id] = pair.split(':');
+      if (slot && id) modsMap[slot] = id;
+    });
 
     const shell = setupData.shells.find((s) => s.id === shellId) || setupData.shells[0];
     const weapon = setupData.weapons.find((w) => w.id === weaponId) || setupData.weapons[0];
@@ -70,9 +45,7 @@ export async function GET(req: NextRequest) {
         const item = isChip ? chipItem : modItem;
         if (!item) return null;
 
-        const translatedSlot = isChip
-          ? CHIP_LABELS[lang]
-          : modItem?.slot_label?.[lang] || slot;
+        const translatedSlot = SLOT_LABELS[slot]?.[lang] || slot;
 
         return { slot: translatedSlot, name: item.name[lang] || item.name.ja };
       })

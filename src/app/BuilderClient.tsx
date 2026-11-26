@@ -20,6 +20,17 @@ interface SavedBuild {
   created_at: string;
 }
 
+const SLOT_LABELS: Record<string, Record<Lang, string>> = {
+  オプティック: { ja: 'オプティック', en: 'Optic', ko: '조준경' },
+  バレル: { ja: 'バレル', en: 'Barrel', ko: '총열' },
+  マガジン: { ja: 'マガジン', en: 'Magazine', ko: '탄창' },
+  ストック: { ja: 'ストック', en: 'Stock', ko: '개머리판' },
+  グリップ: { ja: 'グリップ', en: 'Grip', ko: '손잡이' },
+  アンダーバレル: { ja: 'アンダーバレル', en: 'Underbarrel', ko: '하부 총열' },
+  マズル: { ja: 'マズル', en: 'Muzzle', ko: '총구' },
+  チップ: { ja: 'チップ改造パーツ', en: 'Chip Mod', ko: '칩 개조 부품' },
+};
+
 const UI_TEXT = {
   ja: {
     titlePlaceholder: 'ビルド名を入力（例：対人近距離特化カスタム）',
@@ -48,7 +59,6 @@ const UI_TEXT = {
     deleteFail: 'パスコードが一致しないか、削除パスコードが未設定の投稿です。',
     pinInvalidAlert: '削除用パスコードは半角数字4桁で入力してください（空欄も可）。',
     noBuilds: 'まだ投稿されたビルドがありません。最初のビルドを作成してみましょう！',
-    chipSlot: 'チップ改造パーツ',
     emptySlot: '-- 未装着 --',
     alertNoTitle: 'ビルド名を入力してください',
     termsTitle: 'ご利用にあたって（利用規約・注意事項）',
@@ -93,7 +103,6 @@ const UI_TEXT = {
     deleteFail: 'Incorrect PIN or no delete PIN was set for this build.',
     pinInvalidAlert: 'Please enter a 4-digit numeric PIN (or leave it blank).',
     noBuilds: 'No builds submitted yet. Be the first to share your setup!',
-    chipSlot: 'Chip Mod',
     emptySlot: '-- None --',
     alertNoTitle: 'Please enter a build title.',
     termsTitle: 'Terms of Use & Community Guidelines',
@@ -138,7 +147,6 @@ const UI_TEXT = {
     deleteFail: '비밀번호가 일치하지 않거나 삭제 비밀번호가 설정되지 않은 게시물입니다.',
     pinInvalidAlert: '삭제용 비밀번호는 숫자 4자리로 입력해 주세요 (비워두기 가능).',
     noBuilds: '아직 등록된 빌드가 없습니다. 첫 번째 빌드를 만들어 보세요!',
-    chipSlot: '칩 개조 부품',
     emptySlot: '-- 미장착 --',
     alertNoTitle: '빌드 이름을 입력해 주세요.',
     termsTitle: '이용약관 및 주의사항',
@@ -162,7 +170,6 @@ export default function BuilderClient() {
   const [lang, setLang] = useState<Lang>('ja');
   const t = UI_TEXT[lang];
 
-  // 利用規約同意状態（初期値は true にしてマウント後に判定、未同意なら即ロック）
   const [termsAccepted, setTermsAccepted] = useState<boolean>(true);
   const [isMounted, setIsMounted] = useState<boolean>(false);
 
@@ -179,7 +186,6 @@ export default function BuilderClient() {
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // 削除モーダル用ステート
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [inputDeletePin, setInputDeletePin] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
@@ -275,11 +281,9 @@ export default function BuilderClient() {
   const getOptionsForSlot = (slotName: string) => {
     if (!currentWeapon) return [];
     if (slotName === 'チップ') {
-      return setupData.chips.filter((c) => c.weapon_type === currentWeapon.type);
+      return setupData.chips;
     }
-    return setupData.mods.filter(
-      (m) => m.weapon_type === currentWeapon.type && m.slot === slotName
-    );
+    return setupData.mods.filter((m) => m.slot === slotName);
   };
 
   const handleSaveAndShare = async () => {
@@ -389,7 +393,6 @@ export default function BuilderClient() {
 
   return (
     <div style={styles.container}>
-      {/* 初回アクセス時の利用規約同意モーダル */}
       {isMounted && !termsAccepted && (
         <div style={styles.modalOverlay}>
           <div style={styles.modalBox}>
@@ -423,7 +426,6 @@ export default function BuilderClient() {
         </div>
       )}
 
-      {/* パスコード削除モーダル */}
       {deleteTargetId && (
         <div style={styles.modalOverlay}>
           <div style={{ ...styles.modalBox, maxWidth: '420px' }}>
@@ -436,7 +438,13 @@ export default function BuilderClient() {
               value={inputDeletePin}
               onChange={(e) => setInputDeletePin(e.target.value.replace(/\D/g, '').slice(0, 4))}
               placeholder="0000"
-              style={{ ...styles.input, textAlign: 'center', fontSize: '20px', letterSpacing: '0.3em', marginBottom: '16px' }}
+              style={{
+                ...styles.input,
+                textAlign: 'center',
+                fontSize: '20px',
+                letterSpacing: '0.3em',
+                marginBottom: '16px',
+              }}
             />
             <div style={styles.actionRow}>
               <button
@@ -526,7 +534,7 @@ export default function BuilderClient() {
               >
                 {setupData.weapons.map((w) => (
                   <option key={w.id} value={w.id}>
-                    [{w.type_label[lang]}] {w.name[lang]}
+                    [{w.category[lang]}] {w.name[lang]}
                   </option>
                 ))}
               </select>
@@ -538,10 +546,7 @@ export default function BuilderClient() {
             <div style={styles.slotsGrid}>
               {currentWeapon?.slots.map((slotName, idx) => {
                 const options = getOptionsForSlot(slotName);
-                const slotDisplay =
-                  slotName === 'チップ'
-                    ? t.chipSlot
-                    : options[0]?.slot_label?.[lang] || slotName;
+                const slotDisplay = SLOT_LABELS[slotName]?.[lang] || slotName;
 
                 return (
                   <div key={`${slotName}-${idx}`} style={styles.slotBox}>
@@ -707,7 +712,6 @@ export default function BuilderClient() {
           )}
         </section>
 
-        {/* SEO / AIO 向けツール概要フッター */}
         <footer style={styles.footer}>
           <h2 style={styles.footerTitle}>{t.aboutTitle}</h2>
           <p style={styles.footerDesc}>{t.aboutDesc}</p>
