@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 type Lang = 'ja' | 'en' | 'ko';
 
 const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
-const SHARE_URL_VERSION = '10';
+const SHARE_URL_VERSION = '11';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const VISITOR_SESSION_KEY = '423club_marathon_visited_session_v1';
 const VISITOR_COUNT_CACHE_KEY = '423club_marathon_visitor_count_v1';
@@ -927,6 +927,8 @@ export default function BuilderClient() {
                 const shellObj = setupData.shells.find((s) => s.id === b.shell_id);
                 const weaponObj = setupData.weapons.find((w) => w.id === b.weapon_id);
                 const shellLabel = shellObj ? shellObj.name[lang] : b.shell_id;
+                const weaponLabel = weaponObj ? weaponObj.name[lang] : b.weapon_id;
+                const weaponCategory = weaponObj ? weaponObj.category[lang] : '';
                 return (
                   <div key={b.id} style={styles.buildCard}>
                     <div style={styles.buildCardHeader}>
@@ -934,9 +936,6 @@ export default function BuilderClient() {
                       <div style={styles.buildCardMeta}>
                         <div style={styles.buildCardBadges}>
                           <span style={styles.badge}>{shellLabel}</span>
-                          <span style={styles.weaponBadge}>
-                            {weaponObj ? weaponObj.name[lang] : b.weapon_id}
-                          </span>
                         </div>
                         <h3 style={styles.buildTitle}>{b.title}</h3>
                         {b.user_name && (
@@ -945,7 +944,16 @@ export default function BuilderClient() {
                       </div>
                     </div>
 
+                    {/* 武器名表示（「交流電流」と同じ12px・太字・白文字） */}
+                    <div style={styles.weaponHighlightBox}>
+                      {weaponCategory && (
+                        <span style={styles.weaponCategoryTag}>[{weaponCategory}]</span>
+                      )}
+                      <span style={styles.weaponHighlightName}>{weaponLabel}</span>
+                    </div>
+
                     {b.comment && <p style={styles.buildComment}>{b.comment}</p>}
+
                     <div style={styles.modDetailList}>
                       {Object.entries(b.mods || {}).map(([slot, mId]) => {
                         if (!mId) return null;
@@ -1391,12 +1399,24 @@ const styles: Record<string, React.CSSProperties> = {
     borderRadius: '4px',
     fontWeight: 700,
   },
-  weaponBadge: {
-    backgroundColor: '#1e2631',
-    color: '#a3b8cc',
-    padding: '2px 8px',
-    borderRadius: '4px',
+  weaponHighlightBox: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    backgroundColor: '#1c232d',
+    border: '1px solid #2f3a4a',
+    padding: '6px 10px',
+    borderRadius: '6px',
+  },
+  weaponCategoryTag: {
+    fontSize: '11px',
     fontWeight: 600,
+    color: '#8b9bb4',
+  },
+  weaponHighlightName: {
+    fontSize: '12px',
+    fontWeight: 700,
+    color: '#f0f4f8',
   },
   buildTitle: {
     margin: 0,
