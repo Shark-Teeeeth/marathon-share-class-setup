@@ -27,23 +27,26 @@ export async function GET(req: NextRequest) {
       const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
       const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
       if (supabaseUrl && supabaseKey) {
+        const cleanUrl = supabaseUrl.replace(/\/$/, '');
         const res = await fetch(
-          `${supabaseUrl}/rest/v1/builds?id=eq.${encodeURIComponent(buildId)}&select=*`,
+          `${cleanUrl}/rest/v1/builds?id=eq.${buildId}&select=*`,
           {
+            cache: 'no-store',
             headers: {
               apikey: supabaseKey,
               Authorization: `Bearer ${supabaseKey}`,
+              Accept: 'application/json',
             },
           }
         );
         if (res.ok) {
           const rows = await res.json();
-          const data = rows?.[0];
+          const data = Array.isArray(rows) ? rows[0] : null;
           if (data) {
             title = data.title || title;
             shellId = data.shell_id || shellId;
             weaponId = data.weapon_id || weaponId;
-            modsMap = data.mods || {};
+            modsMap = typeof data.mods === 'object' && data.mods !== null ? data.mods : {};
           }
         }
       }
