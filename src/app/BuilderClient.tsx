@@ -35,15 +35,16 @@ const SLOT_LABELS: Record<string, Record<Lang, string>> = {
 
 const UI_TEXT = {
   ja: {
-    userNameLabel: '1. ユーザー名を入力（必須）',
+    userNameLabel: '1. ユーザー名を入力',
     userNamePlaceholder: '例：Shijimi',
-    titleLabel: '2. ビルド名を入力（必須）',
-    titlePlaceholder: '例：対人近距離特化カスタム',
+    titleLabel: '2. ビルド名を入力',
+    titlePlaceholder: '例：近距離特化カスタム',
     shellLabel: '3. シェルを選択',
     weaponLabel: '4. 武器を選択',
     modsLabel: '5. 装着パーツ・チップを選択',
-    commentPlaceholder: '立ち回りメモ・コメント（任意）',
-    pinLabel: '削除用4桁パスコード（任意）',
+    commentLabel: '6. 立ち回りメモ・コメント（任意）',
+    commentPlaceholder: '立ち回りやカスタムの狙いを入力',
+    pinLabel: '7. 削除用4桁パスコード（任意）',
     pinPlaceholder: '例: 1234',
     saveBtn: 'ビルドを保存してURL発行',
     savingBtn: '保存中...',
@@ -66,8 +67,8 @@ const UI_TEXT = {
     pinInvalidAlert: '削除用パスコードは半角数字4桁で入力してください（空欄も可）。',
     noBuilds: '条件に一致するビルドがありません。',
     emptySlot: '-- 未装着 --',
-    alertNoUserName: '1. ユーザー名を入力してください（必須項目です）',
-    alertNoTitle: '2. ビルド名を入力してください（必須項目です）',
+    alertNoUserName: '1. ユーザー名を入力してください。',
+    alertNoTitle: '2. ビルド名を入力してください。',
     termsTitle: 'ご利用にあたって（利用規約・注意事項）',
     termsIntro:
       '本サイト「423 Club // MARATHON // BUILD & SHARE CLASS SETUP」は、世界中のプレイヤーが自由にビルド構成を作成・共有できるコミュニティツールです。以下のルールに同意のうえご利用ください。',
@@ -84,15 +85,16 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup は、Bungie の PvPvE 脱出シューター『Marathon』向けの無料カスタムビルド共有ツールです。ランナーシェル、武器、各種MOD、チップ改造パーツを組み合わせて保存し、Discord に貼るだけで構成カード画像を自動展開できます。',
   },
   en: {
-    userNameLabel: '1. Enter Username (Required)',
+    userNameLabel: '1. Enter Username',
     userNamePlaceholder: 'e.g., Shijimi',
-    titleLabel: '2. Enter Build Title (Required)',
-    titlePlaceholder: 'e.g., Close-Range PvP Shredder',
+    titleLabel: '2. Enter Build Title',
+    titlePlaceholder: 'e.g., Close-Range Custom',
     shellLabel: '3. Select Runner Shell',
     weaponLabel: '4. Select Weapon',
     modsLabel: '5. Select Mods & Chip Upgrades',
-    commentPlaceholder: 'Playstyle notes / comments (Optional)',
-    pinLabel: '4-Digit Delete PIN (Optional)',
+    commentLabel: '6. Playstyle Notes / Comments (Optional)',
+    commentPlaceholder: 'Enter playstyle tips or build notes',
+    pinLabel: '7. 4-Digit Delete PIN (Optional)',
     pinPlaceholder: 'e.g. 1234',
     saveBtn: 'Save Build & Generate Share URL',
     savingBtn: 'Saving...',
@@ -115,8 +117,8 @@ const UI_TEXT = {
     pinInvalidAlert: 'Please enter a 4-digit numeric PIN (or leave it blank).',
     noBuilds: 'No matching builds found.',
     emptySlot: '-- None --',
-    alertNoUserName: 'Please enter 1. Username (Required).',
-    alertNoTitle: 'Please enter 2. Build Title (Required).',
+    alertNoUserName: 'Please enter 1. Username.',
+    alertNoTitle: 'Please enter 2. Build Title.',
     termsTitle: 'Terms of Use & Community Guidelines',
     termsIntro:
       'Welcome to "423 Club // MARATHON // BUILD & SHARE CLASS SETUP", a global community tool for sharing Marathon loadouts. Please read and agree to the following rules before entering:',
@@ -133,15 +135,16 @@ const UI_TEXT = {
       '423 Club Marathon Build & Share Class Setup is a free multilingual loadout builder for Bungie’s PvPvE extraction shooter Marathon. Customize Runner Shells, weapons, mods, and chip upgrades, and share auto-generated visual loadout cards directly on Discord.',
   },
   ko: {
-    userNameLabel: '1. 사용자 이름 입력 (필수)',
+    userNameLabel: '1. 사용자 이름 입력',
     userNamePlaceholder: '예: Shijimi',
-    titleLabel: '2. 빌드 이름 입력 (필수)',
-    titlePlaceholder: '예: 근거리 PvP 특화 세팅',
+    titleLabel: '2. 빌드 이름 입력',
+    titlePlaceholder: '예: 근거리 특화 커스텀',
     shellLabel: '3. 쉘 선택',
     weaponLabel: '4. 무기 선택',
     modsLabel: '5. 장착 부품 및 칩 선택',
-    commentPlaceholder: '운용 팁 / 코멘트 (선택 사항)',
-    pinLabel: '삭제용 4자리 비밀번호 (선택)',
+    commentLabel: '6. 운용 팁 / 코멘트 (선택)',
+    commentPlaceholder: '운용 팁이나 빌드 의도를 입력하세요',
+    pinLabel: '7. 삭제용 4자리 비밀번호 (선택)',
     pinPlaceholder: '예: 1234',
     saveBtn: '빌드 저장 및 공유 URL 발급',
     savingBtn: '저장 중...',
@@ -164,8 +167,8 @@ const UI_TEXT = {
     pinInvalidAlert: '삭제용 비밀번호는 숫자 4자리로 입력해 주세요 (비워두기 가능).',
     noBuilds: '조건에 일치하는 빌드가 없습니다.',
     emptySlot: '-- 미장착 --',
-    alertNoUserName: '1. 사용자 이름을 입력해 주세요 (필수 항목).',
-    alertNoTitle: '2. 빌드 이름을 입력해 주세요 (필수 항목).',
+    alertNoUserName: '1. 사용자 이름을 입력해 주세요.',
+    alertNoTitle: '2. 빌드 이름을 입력해 주세요.',
     termsTitle: '이용약관 및 주의사항',
     termsIntro:
       '"423 Club // MARATHON // BUILD & SHARE CLASS SETUP"은 전 세계 플레이어가 자유롭게 빌드 구성을 만들고 공유하는 커뮤니티 도구입니다. 아래 규칙에 동의한 후 이용해 주세요.',
@@ -193,6 +196,7 @@ export default function BuilderClient() {
   const [userName, setUserName] = useState('');
   const [title, setTitle] = useState('');
   const [selectedShell, setSelectedShell] = useState<string>('all');
+  const [shellImgError, setShellImgError] = useState<boolean>(false);
   const [selectedWeapon, setSelectedWeapon] = useState<string>(setupData.weapons[0]?.id || 'w_1');
   const [selectedMods, setSelectedMods] = useState<Record<string, string>>({});
   const [comment, setComment] = useState('');
@@ -208,6 +212,10 @@ export default function BuilderClient() {
   const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
   const [inputDeletePin, setInputDeletePin] = useState('');
   const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setShellImgError(false);
+  }, [selectedShell]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -293,6 +301,10 @@ export default function BuilderClient() {
   const currentWeapon = useMemo(() => {
     return setupData.weapons.find((w) => w.id === selectedWeapon) || setupData.weapons[0];
   }, [selectedWeapon]);
+
+  const currentShellObj = useMemo(() => {
+    return setupData.shells.find((s) => s.id === selectedShell);
+  }, [selectedShell]);
 
   const handleWeaponChange = (newWeaponId: string) => {
     setSelectedWeapon(newWeaponId);
@@ -423,6 +435,8 @@ export default function BuilderClient() {
     });
   }, [builds, filterShell, filterWeapon, searchUserQuery]);
 
+  const showShellImage = selectedShell !== 'all' && !shellImgError;
+
   return (
     <div style={styles.container}>
       {isMounted && !termsAccepted && (
@@ -533,6 +547,7 @@ export default function BuilderClient() {
 
       <main style={styles.main}>
         <section style={styles.card}>
+          {/* 1. ユーザー名 / 2. ビルド名 */}
           <div style={styles.gridUserTitle}>
             <div>
               <label style={styles.label}>{t.userNameLabel}</label>
@@ -559,20 +574,33 @@ export default function BuilderClient() {
             </div>
           </div>
 
+          {/* 3. シェル / 4. 武器 */}
           <div style={styles.gridTwo}>
             <div>
               <label style={styles.label}>{t.shellLabel}</label>
-              <select
-                value={selectedShell}
-                onChange={(e) => setSelectedShell(e.target.value)}
-                style={styles.select}
-              >
-                {setupData.shells.map((s) => (
-                  <option key={s.id} value={s.id}>
-                    {s.name[lang]}
-                  </option>
-                ))}
-              </select>
+              <div style={styles.shellSelectorRow}>
+                {showShellImage && (
+                  <div style={styles.shellImageBox}>
+                    <img
+                      src={`/shells/${selectedShell}.png`}
+                      alt={currentShellObj ? currentShellObj.name[lang] : selectedShell}
+                      style={styles.shellImage}
+                      onError={() => setShellImgError(true)}
+                    />
+                  </div>
+                )}
+                <select
+                  value={selectedShell}
+                  onChange={(e) => setSelectedShell(e.target.value)}
+                  style={styles.select}
+                >
+                  {setupData.shells.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name[lang]}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
 
             <div>
@@ -591,6 +619,7 @@ export default function BuilderClient() {
             </div>
           </div>
 
+          {/* 5. 装着パーツ・チップ */}
           <div style={styles.slotsSection}>
             <label style={styles.label}>{t.modsLabel}</label>
             <div style={styles.slotsGrid}>
@@ -624,16 +653,20 @@ export default function BuilderClient() {
             </div>
           </div>
 
+          {/* 6. 立ち回りメモ・コメント（任意） / 7. 削除用4桁パスコード（任意） */}
           <div style={styles.gridCommentPin}>
-            <input
-              type="text"
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder={t.commentPlaceholder}
-              style={styles.input}
-            />
             <div>
-              <label style={styles.pinLabel}>{t.pinLabel}</label>
+              <label style={styles.optionalLabel}>{t.commentLabel}</label>
+              <input
+                type="text"
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder={t.commentPlaceholder}
+                style={styles.input}
+              />
+            </div>
+            <div>
+              <label style={styles.optionalLabel}>{t.pinLabel}</label>
               <input
                 type="text"
                 inputMode="numeric"
@@ -937,10 +970,33 @@ const styles: Record<string, React.CSSProperties> = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
     gap: '16px',
+    alignItems: 'start',
+  },
+  shellSelectorRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  shellImageBox: {
+    width: '56px',
+    height: '56px',
+    flexShrink: 0,
+    backgroundColor: '#0d0f12',
+    border: '1px solid #c8ff00',
+    borderRadius: '8px',
+    overflow: 'hidden',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  shellImage: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
   },
   gridCommentPin: {
     display: 'grid',
-    gridTemplateColumns: '1fr 220px',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
     gap: '16px',
     alignItems: 'end',
   },
@@ -952,12 +1008,13 @@ const styles: Record<string, React.CSSProperties> = {
     marginBottom: '8px',
     letterSpacing: '0.04em',
   },
-  pinLabel: {
+  optionalLabel: {
     display: 'block',
-    fontSize: '11px',
+    fontSize: '13px',
     fontWeight: 700,
     color: '#8b9bb4',
-    marginBottom: '6px',
+    marginBottom: '8px',
+    letterSpacing: '0.04em',
   },
   select: {
     width: '100%',
