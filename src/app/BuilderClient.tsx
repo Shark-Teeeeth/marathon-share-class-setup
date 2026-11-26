@@ -7,7 +7,7 @@ import { supabase } from '../lib/supabase';
 type Lang = 'ja' | 'en' | 'ko';
 
 const SITE_URL = 'https://marathon-share-class-setup.vercel.app';
-const SHARE_URL_VERSION = '9';
+const SHARE_URL_VERSION = '10';
 const TERMS_STORAGE_KEY = '423club_marathon_terms_accepted_v1';
 const MY_PINS_STORAGE_KEY = '423club_marathon_my_pins_v1';
 const USER_NAME_STORAGE_KEY = '423club_marathon_user_name_v1';

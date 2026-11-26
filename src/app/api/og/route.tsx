@@ -108,17 +108,15 @@ export async function GET(req: NextRequest) {
             color: '#f0f4f8',
             display: 'flex',
             flexDirection: 'column',
-            justifyContent: 'flex-start',
-            gap: '24px',
             paddingTop: '24px',
             paddingLeft: '36px',
             paddingRight: '36px',
-            paddingBottom: '64px',
+            paddingBottom: '44px',
             border: '6px solid #c8ff00',
             fontFamily: 'sans-serif',
           }}
         >
-          {/* 最上段：サイトブランドヘッダー */}
+          {/* 最上段：サイトブランドヘッダー（位置固定） */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
             <div style={{ display: 'flex', color: '#c8ff00', fontSize: 21, fontWeight: 800, letterSpacing: '0.06em' }}>
               423 Club // MARATHON BUILD &amp; SHARE CLASS SETUP
@@ -130,146 +128,158 @@ export async function GET(req: NextRequest) {
             )}
           </div>
 
-          {/* 中段：シェル顔画像 ＋ 大きなシェル名・武器名 ＋ ビルドタイトル・コメント */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '26px', width: '100%' }}>
-            {shellImageUrl ? (
-              <div
-                style={{
-                  display: 'flex',
-                  width: '160px',
-                  height: '160px',
-                  borderRadius: '16px',
-                  border: '4px solid #c8ff00',
-                  overflow: 'hidden',
-                  backgroundColor: '#161a20',
-                  flexShrink: 0,
-                }}
-              >
-                <img
-                  src={shellImageUrl}
-                  alt={shell.name[lang] || shell.name.ja}
-                  width={160}
-                  height={160}
-                  style={{ width: '160px', height: '160px', objectFit: 'cover' }}
-                />
-              </div>
-            ) : (
-              <div
-                style={{
-                  display: 'flex',
-                  width: '160px',
-                  height: '160px',
-                  borderRadius: '16px',
-                  border: '4px solid #2e3744',
-                  backgroundColor: '#161a20',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#5a6678',
-                  fontSize: 66,
-                  fontWeight: 800,
-                  flexShrink: 0,
-                }}
-              >
-                ×
-              </div>
-            )}
-
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-              {/* シェル名 & 武器名（大サイズ・高コントラスト） */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+          {/* 中央配置ラッパー：中段（シェル・武器・タイトル・コメント）＋ 下段（MOD一覧）を1つの塊として上下中央へ */}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              flex: 1,
+              gap: '22px',
+              width: '100%',
+            }}
+          >
+            {/* 中段：シェル顔画像 ＋ 大きなシェル名・武器名 ＋ ビルドタイトル・コメント */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '26px', width: '100%' }}>
+              {shellImageUrl ? (
                 <div
                   style={{
                     display: 'flex',
-                    backgroundColor: '#c8ff00',
-                    color: '#0d0f12',
-                    padding: '6px 18px',
-                    borderRadius: '8px',
-                    fontSize: 30,
-                    fontWeight: 900,
+                    width: '160px',
+                    height: '160px',
+                    borderRadius: '16px',
+                    border: '4px solid #c8ff00',
+                    overflow: 'hidden',
+                    backgroundColor: '#161a20',
+                    flexShrink: 0,
                   }}
                 >
-                  {normalizeGlyphs(shell.name[lang] || shell.name.ja)}
+                  <img
+                    src={shellImageUrl}
+                    alt={shell.name[lang] || shell.name.ja}
+                    width={160}
+                    height={160}
+                    style={{ width: '160px', height: '160px', objectFit: 'cover' }}
+                  />
                 </div>
+              ) : (
                 <div
                   style={{
                     display: 'flex',
-                    backgroundColor: '#1e2631',
-                    border: '2px solid #3c4859',
-                    color: '#ffffff',
-                    padding: '6px 20px',
-                    borderRadius: '8px',
-                    fontSize: 30,
-                    fontWeight: 900,
+                    width: '160px',
+                    height: '160px',
+                    borderRadius: '16px',
+                    border: '4px solid #2e3744',
+                    backgroundColor: '#161a20',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#5a6678',
+                    fontSize: 66,
+                    fontWeight: 800,
+                    flexShrink: 0,
                   }}
                 >
-                  {normalizeGlyphs(weapon.name[lang] || weapon.name.ja)}
-                </div>
-              </div>
-
-              {/* ビルドタイトル */}
-              <div style={{ display: 'flex', fontSize: 44, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
-                {title.length > 22 ? `${title.slice(0, 22)}...` : title}
-              </div>
-
-              {/* コメント */}
-              {comment && (
-                <div
-                  style={{
-                    display: 'flex',
-                    fontSize: 22,
-                    color: '#cbd5e1',
-                    lineHeight: 1.3,
-                  }}
-                >
-                  {comment.length > 52 ? `${comment.slice(0, 52)}...` : comment}
+                  ×
                 </div>
               )}
-            </div>
-          </div>
 
-          {/* 下段：装着MOD・チップ一覧 */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', width: '100%' }}>
-            {modEntries.length > 0 ? (
-              modEntries.slice(0, 4).map((m, i) => (
-                <div
-                  key={i}
-                  style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    backgroundColor: '#161a20',
-                    borderLeft: '6px solid #c8ff00',
-                    padding: '11px 20px',
-                    borderRadius: '8px',
-                    width: isFewMods ? '1116px' : '552px',
-                    gap: '4px',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: 17, color: '#9aa8bc', fontWeight: 700 }}>
-                      [{m.slot}]
-                    </span>
-                    <span style={{ fontSize: 26, fontWeight: 800, color: '#ffffff' }}>
-                      {m.name}
-                    </span>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
+                {/* シェル名 & 武器名（大サイズ・高コントラスト） */}
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      backgroundColor: '#c8ff00',
+                      color: '#0d0f12',
+                      padding: '6px 18px',
+                      borderRadius: '8px',
+                      fontSize: 30,
+                      fontWeight: 900,
+                    }}
+                  >
+                    {normalizeGlyphs(shell.name[lang] || shell.name.ja)}
                   </div>
-                  {m.desc && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        fontSize: 18,
-                        color: '#cbd5e1',
-                        lineHeight: 1.28,
-                      }}
-                    >
-                      {m.desc.length > 56 ? `${m.desc.slice(0, 56)}...` : m.desc}
-                    </div>
-                  )}
+                  <div
+                    style={{
+                      display: 'flex',
+                      backgroundColor: '#1e2631',
+                      border: '2px solid #3c4859',
+                      color: '#ffffff',
+                      padding: '6px 20px',
+                      borderRadius: '8px',
+                      fontSize: 30,
+                      fontWeight: 900,
+                    }}
+                  >
+                    {normalizeGlyphs(weapon.name[lang] || weapon.name.ja)}
+                  </div>
                 </div>
-              ))
-            ) : (
-              <div style={{ display: 'flex', fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
-            )}
+
+                {/* ビルドタイトル */}
+                <div style={{ display: 'flex', fontSize: 44, fontWeight: 900, color: '#ffffff', lineHeight: 1.12 }}>
+                  {title.length > 22 ? `${title.slice(0, 22)}...` : title}
+                </div>
+
+                {/* コメント */}
+                {comment && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      fontSize: 22,
+                      color: '#cbd5e1',
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {comment.length > 52 ? `${comment.slice(0, 52)}...` : comment}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* 下段：装着MOD・チップ一覧 */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', width: '100%' }}>
+              {modEntries.length > 0 ? (
+                modEntries.slice(0, 4).map((m, i) => (
+                  <div
+                    key={i}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      backgroundColor: '#161a20',
+                      borderLeft: '6px solid #c8ff00',
+                      padding: '11px 20px',
+                      borderRadius: '8px',
+                      width: isFewMods ? '1116px' : '552px',
+                      gap: '4px',
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ fontSize: 17, color: '#9aa8bc', fontWeight: 700 }}>
+                        [{m.slot}]
+                      </span>
+                      <span style={{ fontSize: 26, fontWeight: 800, color: '#ffffff' }}>
+                        {m.name}
+                      </span>
+                    </div>
+                    {m.desc && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          fontSize: 18,
+                          color: '#cbd5e1',
+                          lineHeight: 1.28,
+                        }}
+                      >
+                        {m.desc.length > 56 ? `${m.desc.slice(0, 56)}...` : m.desc}
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div style={{ display: 'flex', fontSize: 24, color: '#8b9bb4' }}>No Mods Equipped</div>
+              )}
+            </div>
           </div>
         </div>
       ),
