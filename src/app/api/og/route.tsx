@@ -3,8 +3,6 @@ import { NextRequest } from 'next/server';
 import setupData from '../../../../data/setup_data.json';
 import { supabase } from '../../../lib/supabase';
 
-export const runtime = 'edge';
-
 const CHIP_LABELS = {
   ja: 'チップ改造パーツ',
   en: 'Chip Mod',
