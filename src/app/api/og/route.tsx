@@ -55,8 +55,89 @@ export async function GET(req: NextRequest) {
     const lang: 'ja' | 'en' | 'ko' =
       rawLang === 'en' || rawLang === 'ko' ? rawLang : 'ja';
 
+    const rawTitle = searchParams.get('title');
+    const hasMods = searchParams.getAll('m').length > 0;
+    const isTopPageShare = !rawTitle && !hasMods;
+
+    // サイトトップURL共有時：ロゴとタイトルだけのシンプルなブランドカードを生成
+    if (isTopPageShare) {
+      const logoUrl = `${origin}/logo.png`;
+      const brandRes = new ImageResponse(
+        (
+          <div
+            style={{
+              width: '1200px',
+              height: '630px',
+              backgroundColor: '#0d0f12',
+              color: '#f0f4f8',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '48px',
+              border: '6px solid #c8ff00',
+              fontFamily: 'sans-serif',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '38px',
+              }}
+            >
+              <img
+                src={logoUrl}
+                alt="423 Club"
+                width={156}
+                height={156}
+                style={{ width: '156px', height: '156px', objectFit: 'contain' }}
+              />
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    fontSize: 84,
+                    fontWeight: 900,
+                    color: '#c8ff00',
+                    letterSpacing: '0.04em',
+                    lineHeight: 1.05,
+                  }}
+                >
+                  423 Club
+                </div>
+                <div
+                  style={{
+                    display: 'flex',
+                    fontSize: 28,
+                    fontWeight: 700,
+                    color: '#9aa8bc',
+                    letterSpacing: '0.14em',
+                  }}
+                >
+                  MARATHON // BUILD &amp; SHARE CLASS SETUP
+                </div>
+              </div>
+            </div>
+          </div>
+        ),
+        { width: 1200, height: 630 }
+      );
+
+      const brandBuffer = await brandRes.arrayBuffer();
+      return new Response(brandBuffer, {
+        status: 200,
+        headers: {
+          'Content-Type': 'image/png',
+          'Cache-Control': 'public, max-age=60',
+        },
+      });
+    }
+
+    // 個別ビルド共有時：従来の詳細ビルドカードを生成
     const title = normalizeGlyphs(
-      searchParams.get('title') || 'MARATHON // BUILD & SHARE CLASS SETUP'
+      rawTitle || 'MARATHON // BUILD & SHARE CLASS SETUP'
     );
     const userName = normalizeGlyphs(searchParams.get('user') || '');
     const comment = normalizeGlyphs(searchParams.get('comment') || '');
@@ -128,7 +209,7 @@ export async function GET(req: NextRequest) {
             )}
           </div>
 
-          {/* 中央配置ラッパー：中段（シェル・武器・タイトル・コメント）＋ 下段（MOD一覧）を1つの塊として上下中央へ */}
+          {/* 中央配置ラッパー */}
           <div
             style={{
               display: 'flex',
@@ -184,7 +265,7 @@ export async function GET(req: NextRequest) {
               )}
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', flex: 1 }}>
-                {/* シェル名 & 武器名（大サイズ・高コントラスト） */}
+                {/* シェル名 & 武器名 */}
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'center' }}>
                   <div
                     style={{
