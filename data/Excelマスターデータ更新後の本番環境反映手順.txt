@@ -29,9 +29,9 @@ Excel を編集・保存したあとは、必ず以下の手順で JSON 変換�
 ------------------------------------------------------------
 ターミナルで以下の3行を順番に実行します。
 
-  git add .
-  git commit -m "Update: sync setup_data.json from Excel"
-  git push
+git add .
+git commit -m "Update: sync setup_data.json from Excel"
+git push
 
 ■ 確認ポイント：
 1. Vercel の「Deployments」画面で最新ビルドが緑色の「Ready」になるのを待つ（約1〜2分）。
